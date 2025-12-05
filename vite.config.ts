@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/PB_assignment_2/',
   plugins: [
     vue(),
     vueDevTools(),
