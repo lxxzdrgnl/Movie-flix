@@ -307,8 +307,9 @@ onUnmounted(() => {
 /* Responsive Design */
 @media (max-width: 768px) {
   .hero-banner {
-    height: 55vh;
-    min-height: 400px;
+    height: 45vh;
+    min-height: 350px;
+    max-height: 450px;
   }
 
   .hero-banner-content {
@@ -339,8 +340,8 @@ onUnmounted(() => {
 
 @media (max-width: 480px) {
   .hero-banner {
-    height: 50vh;
-    min-height: 350px;
+    height: 55vh;
+    min-height: 300px;
   }
 
   .hero-banner-title {
