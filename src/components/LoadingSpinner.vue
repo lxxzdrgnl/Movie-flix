@@ -1,0 +1,27 @@
+<script setup lang="ts">
+interface Props {
+  text?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  text: '로딩 중...',
+})
+</script>
+
+<template>
+  <div class="loading-container">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">{{ text }}</p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+</style>
