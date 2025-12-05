@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
+import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie, Genre } from '@/types/movie'
 import { discoverMovies, getGenres } from '@/utils/tmdb'
@@ -12,6 +13,8 @@ const loading = ref(false)
 const selectedGenre = ref<string>('')
 const selectedRating = ref<string>('')
 const sortBy = ref<string>('popularity.desc')
+const selectedMovie = ref<Movie | null>(null)
+const showModal = ref(false)
 
 const loadGenres = async () => {
   try {
@@ -51,6 +54,18 @@ const resetFilters = () => {
   selectedRating.value = ''
   sortBy.value = 'popularity.desc'
   searchMovies()
+}
+
+const handleMovieClick = (movie: Movie) => {
+  selectedMovie.value = movie
+  showModal.value = true
+}
+
+const handleCloseModal = () => {
+  showModal.value = false
+  setTimeout(() => {
+    selectedMovie.value = null
+  }, 300)
 }
 
 onMounted(() => {
@@ -134,9 +149,11 @@ onMounted(() => {
         </div>
 
         <div v-else class="movie-grid">
-          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
+          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
         </div>
       </div>
     </main>
+
+    <MovieDetailModal :movie="selectedMovie" :show="showModal" @close="handleCloseModal" />
   </div>
 </template>
