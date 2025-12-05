@@ -34,7 +34,7 @@ const allMovies = computed(() => [
 const selectRandomHeroMovie = () => {
   if (allMovies.value.length > 0) {
     const randomIndex = Math.floor(Math.random() * allMovies.value.length)
-    heroMovie.value = allMovies.value[randomIndex]
+    heroMovie.value = allMovies.value[randomIndex] ?? null
   }
 }
 
