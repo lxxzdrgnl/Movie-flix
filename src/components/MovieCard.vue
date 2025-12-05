@@ -8,7 +8,12 @@ interface Props {
   movie: Movie
 }
 
+interface Emits {
+  (e: 'click', movie: Movie): void
+}
+
 const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
 const { toggleWishlist, isInWishlist } = useWishlist()
 
 const posterUrl = computed(() => getPosterUrl(props.movie.poster_path))
@@ -20,10 +25,14 @@ const handleWishlistToggle = (e: Event) => {
   e.stopPropagation()
   toggleWishlist(props.movie)
 }
+
+const handleCardClick = () => {
+  emit('click', props.movie)
+}
 </script>
 
 <template>
-  <div class="movie-card">
+  <div class="movie-card" @click="handleCardClick">
     <img :src="posterUrl" :alt="movie.title" class="movie-card-poster" loading="lazy" />
 
     <button
@@ -36,17 +45,23 @@ const handleWishlistToggle = (e: Event) => {
     </button>
 
     <div class="movie-card-overlay">
-      <h3 class="movie-card-title">{{ movie.title }}</h3>
-      <div class="movie-card-info">
-        <span class="movie-card-rating">
-          <i class="fas fa-star" style="color: #ffd700"></i>
-          {{ rating }}
-        </span>
-        <span>{{ releaseYear }}</span>
+      <div class="movie-card-click-hint">
+        <i class="fas fa-info-circle"></i> 자세히 보기
       </div>
-      <p class="movie-card-overview">
-        {{ movie.overview || '설명이 없습니다.' }}
-      </p>
+
+      <div class="movie-card-content">
+        <h3 class="movie-card-title">{{ movie.title }}</h3>
+        <div class="movie-card-info">
+          <span class="movie-card-rating">
+            <i class="fas fa-star" style="color: #ffd700"></i>
+            {{ rating }}
+          </span>
+          <span>{{ releaseYear }}</span>
+        </div>
+        <p class="movie-card-overview">
+          {{ movie.overview || '설명이 없습니다.' }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -61,5 +76,41 @@ const handleWishlistToggle = (e: Event) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.movie-card-click-hint {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  background-color: rgba(229, 9, 20, 0.9);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+  backdrop-filter: blur(5px);
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all var(--transition-speed) var(--transition-ease);
+}
+
+.movie-card:hover .movie-card-click-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.movie-card-click-hint i {
+  font-size: 0.9rem;
+}
+
+.movie-card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
 }
 </style>

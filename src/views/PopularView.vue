@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
+import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie } from '@/types/movie'
 import { getPopularMovies } from '@/utils/tmdb'
@@ -12,6 +13,8 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const viewMode = ref<'table' | 'infinite'>('infinite')
 const showScrollTop = ref(false)
+const selectedMovie = ref<Movie | null>(null)
+const showModal = ref(false)
 
 const loadMovies = async (page: number, append: boolean = false) => {
   try {
@@ -77,6 +80,18 @@ const switchViewMode = (mode: 'table' | 'infinite') => {
   }
 }
 
+const handleMovieClick = (movie: Movie) => {
+  selectedMovie.value = movie
+  showModal.value = true
+}
+
+const handleCloseModal = () => {
+  showModal.value = false
+  setTimeout(() => {
+    selectedMovie.value = null
+  }, 300)
+}
+
 onMounted(() => {
   loadMovies(1)
   window.addEventListener('scroll', handleScroll)
@@ -119,11 +134,11 @@ onUnmounted(() => {
         </div>
 
         <div v-if="viewMode === 'table'" class="table-view">
-          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
+          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
         </div>
 
         <div v-else class="movie-grid">
-          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" />
+          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
         </div>
 
         <LoadingSpinner v-if="loading" text="영화 목록을 불러오는 중..." />
@@ -152,5 +167,7 @@ onUnmounted(() => {
         </button>
       </div>
     </main>
+
+    <MovieDetailModal :movie="selectedMovie" :show="showModal" @close="handleCloseModal" />
   </div>
 </template>

@@ -1,12 +1,28 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
+import MovieDetailModal from '@/components/MovieDetailModal.vue'
+import type { Movie } from '@/types/movie'
 import { useWishlist } from '@/composables/useWishlist'
 
 const { wishlist } = useWishlist()
 
 const hasMovies = computed(() => wishlist.value.length > 0)
+const selectedMovie = ref<Movie | null>(null)
+const showModal = ref(false)
+
+const handleMovieClick = (movie: Movie) => {
+  selectedMovie.value = movie
+  showModal.value = true
+}
+
+const handleCloseModal = () => {
+  showModal.value = false
+  setTimeout(() => {
+    selectedMovie.value = null
+  }, 300)
+}
 </script>
 
 <template>
@@ -23,7 +39,7 @@ const hasMovies = computed(() => wishlist.value.length > 0)
         </div>
 
         <div v-if="hasMovies" class="movie-grid">
-          <MovieCard v-for="movie in wishlist" :key="movie.id" :movie="movie" />
+          <MovieCard v-for="movie in wishlist" :key="movie.id" :movie="movie" @click="handleMovieClick" />
         </div>
 
         <div v-else class="empty-state">
@@ -39,6 +55,8 @@ const hasMovies = computed(() => wishlist.value.length > 0)
         </div>
       </div>
     </main>
+
+    <MovieDetailModal :movie="selectedMovie" :show="showModal" @close="handleCloseModal" />
   </div>
 </template>
 
