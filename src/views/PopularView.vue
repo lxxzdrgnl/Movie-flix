@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
+import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
 import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie } from '@/types/movie'
@@ -9,6 +10,7 @@ import { getPopularMovies } from '@/utils/tmdb'
 
 const movies = ref<Movie[]>([])
 const loading = ref(false)
+const isLoadingMore = ref(false)
 const currentPage = ref(1)
 const totalPages = ref(1)
 const viewMode = ref<'table' | 'infinite'>('infinite')
@@ -18,7 +20,12 @@ const showModal = ref(false)
 
 const loadMovies = async (page: number, append: boolean = false) => {
   try {
-    loading.value = true
+    if (append) {
+      isLoadingMore.value = true
+    } else {
+      loading.value = true
+    }
+
     const response = await getPopularMovies(page)
 
     if (append) {
@@ -34,13 +41,14 @@ const loadMovies = async (page: number, append: boolean = false) => {
     console.error('영화 데이터 로드 실패:', err)
   } finally {
     loading.value = false
+    isLoadingMore.value = false
   }
 }
 
 const handleScroll = () => {
   showScrollTop.value = window.scrollY > 300
 
-  if (viewMode.value === 'infinite' && !loading.value) {
+  if (viewMode.value === 'infinite' && !loading.value && !isLoadingMore.value) {
     const scrollBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500
 
     if (scrollBottom && currentPage.value < totalPages.value) {
@@ -139,6 +147,7 @@ onUnmounted(() => {
 
         <div v-else class="movie-grid">
           <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
+          <MovieCardSkeleton v-if="isLoadingMore" v-for="i in 6" :key="'skeleton-' + i" />
         </div>
 
         <LoadingSpinner v-if="loading" text="영화 목록을 불러오는 중..." />

@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
+import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
 import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie, Genre } from '@/types/movie'
@@ -273,9 +274,8 @@ onUnmounted(() => {
 
         <div v-else class="movie-grid">
           <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
+          <MovieCardSkeleton v-if="isLoadingMore" v-for="i in 6" :key="'skeleton-' + i" />
         </div>
-
-        <LoadingSpinner v-if="isLoadingMore" text="더 많은 영화를 불러오는 중..." />
 
         <button
           class="scroll-top-btn"
