@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import MovieCard from '@/components/MovieCard.vue'
 import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
@@ -7,6 +7,7 @@ import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie, Genre } from '@/types/movie'
 import { discoverMovies, getGenres, searchMovies as searchMoviesAPI } from '@/utils/tmdb'
+import { useSearchHistory } from '@/composables/useSearchHistory'
 
 const movies = ref<Movie[]>([])
 const genres = ref<Genre[]>([])
@@ -21,7 +22,15 @@ const currentPage = ref(1)
 const hasMorePages = ref(true)
 const isLoadingMore = ref(false)
 const showScrollTop = ref(false)
+const showSearchHistory = ref(false)
 let searchTimeout: number | null = null
+
+// 검색 히스토리 관리
+const { addSearchQuery, removeSearchQuery, clearSearchHistory, getRecentSearches } =
+  useSearchHistory()
+
+// 최근 검색어 가져오기 (최대 10개)
+const recentSearches = computed(() => getRecentSearches(10))
 
 const loadGenres = async () => {
   try {
@@ -44,6 +53,12 @@ const searchMovies = async (append: boolean = false) => {
 
     // 검색어가 있으면 검색 API 사용
     if (searchQuery.value.trim()) {
+      // 검색 히스토리에 추가 (첫 페이지 검색일 때만)
+      if (!append) {
+        addSearchQuery(searchQuery.value.trim())
+        showSearchHistory.value = false
+      }
+
       const response = await searchMoviesAPI(searchQuery.value.trim(), page)
 
       let newMovies = response.results
@@ -162,8 +177,37 @@ const handleSearchInput = () => {
     clearTimeout(searchTimeout)
   }
   searchTimeout = window.setTimeout(() => {
-    searchMovies()
+    if (searchQuery.value.trim()) {
+      searchMovies()
+    }
   }, 500)
+}
+
+const handleSearchFocus = () => {
+  showSearchHistory.value = true
+}
+
+const handleSearchBlur = () => {
+  // 약간의 딜레이를 줘서 클릭 이벤트가 처리되도록 함
+  setTimeout(() => {
+    showSearchHistory.value = false
+  }, 200)
+}
+
+const selectSearchHistory = (query: string) => {
+  searchQuery.value = query
+  showSearchHistory.value = false
+  searchMovies()
+}
+
+const handleDeleteHistory = (query: string) => {
+  removeSearchQuery(query)
+}
+
+const handleClearAllHistory = () => {
+  if (confirm('모든 검색 기록을 삭제하시겠습니까?')) {
+    clearSearchHistory()
+  }
 }
 
 const handleFilterChange = () => {
@@ -202,10 +246,52 @@ onUnmounted(() => {
               class="search-input"
               v-model="searchQuery"
               @input="handleSearchInput"
+              @focus="handleSearchFocus"
+              @blur="handleSearchBlur"
               placeholder="영화 제목을 검색하세요..."
             />
+            <button
+              v-if="searchQuery"
+              class="clear-input-btn"
+              @click="searchQuery = ''"
+              title="입력 지우기"
+            >
+              <i class="fas fa-times"></i>
+            </button>
             <i class="fas fa-search search-icon"></i>
           </div>
+
+          <!-- 검색 히스토리 드롭다운 -->
+          <Transition name="dropdown">
+            <div
+              v-if="showSearchHistory && recentSearches.length > 0"
+              class="search-history-dropdown"
+            >
+              <div class="history-header">
+                <span class="history-title">
+                  <i class="fas fa-history"></i> 최근 검색어
+                </span>
+                <button class="clear-all-btn" @click="handleClearAllHistory">
+                  전체 삭제
+                </button>
+              </div>
+              <ul class="history-list">
+                <li v-for="item in recentSearches" :key="item.query" class="history-item">
+                  <button class="history-query-btn" @click="selectSearchHistory(item.query)">
+                    <i class="fas fa-clock history-icon"></i>
+                    <span class="history-text">{{ item.query }}</span>
+                  </button>
+                  <button
+                    class="delete-history-btn"
+                    @click="handleDeleteHistory(item.query)"
+                    title="삭제"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </Transition>
         </div>
 
         <div class="filter-section">
@@ -293,6 +379,7 @@ onUnmounted(() => {
 
 <style scoped>
 .search-bar-container {
+  position: relative;
   margin-bottom: 2rem;
 }
 
@@ -305,7 +392,7 @@ onUnmounted(() => {
 
 .search-input {
   width: 100%;
-  padding: 1rem 3rem 1rem 1.5rem;
+  padding: 1rem 7rem 1rem 1.5rem;
   font-size: 1rem;
   background-color: var(--bg-light);
   border: 2px solid var(--border-color);
@@ -324,6 +411,25 @@ onUnmounted(() => {
   color: var(--text-muted);
 }
 
+.clear-input-btn {
+  position: absolute;
+  right: 4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color var(--transition-speed);
+  z-index: 1;
+}
+
+.clear-input-btn:hover {
+  color: var(--text-primary);
+}
+
 .search-icon {
   position: absolute;
   right: 1.5rem;
@@ -334,19 +440,230 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
+/* 검색 히스토리 드롭다운 */
+.search-history-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.history-title i {
+  color: var(--primary-color);
+  font-size: 0.85rem;
+}
+
+.clear-all-btn {
+  padding: 0.375rem 0.875rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all var(--transition-speed);
+}
+
+.clear-all-btn:hover {
+  background-color: rgba(229, 9, 20, 0.1);
+  color: var(--primary-color);
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color var(--transition-speed);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.history-query-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.history-icon {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.history-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.delete-history-btn {
+  padding: 0.875rem 1.25rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color var(--transition-speed);
+  flex-shrink: 0;
+}
+
+.delete-history-btn:hover {
+  color: var(--primary-color);
+}
+
+/* 드롭다운 애니메이션 */
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+}
+
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+/* 스크롤바 스타일 */
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 @media (max-width: 768px) {
   .search-bar {
     max-width: 100%;
   }
 
   .search-input {
-    padding: 0.875rem 2.5rem 0.875rem 1.25rem;
+    padding: 0.875rem 6rem 0.875rem 1.25rem;
     font-size: 0.95rem;
+  }
+
+  .clear-input-btn {
+    right: 3.5rem;
+    font-size: 1rem;
   }
 
   .search-icon {
     right: 1.25rem;
     font-size: 1.1rem;
+  }
+
+  .search-history-dropdown {
+    max-width: calc(100% - 2rem);
+  }
+
+  .history-header,
+  .history-query-btn,
+  .delete-history-btn {
+    padding: 0.75rem 1rem;
+  }
+
+  .history-title {
+    font-size: 0.85rem;
+  }
+
+  .clear-all-btn {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.8rem;
+  }
+
+  .history-query-btn {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    padding: 0.75rem 5.5rem 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .clear-input-btn {
+    right: 3rem;
+    font-size: 0.95rem;
+    padding: 0.375rem;
+  }
+
+  .search-icon {
+    right: 1rem;
+    font-size: 1rem;
+  }
+
+  .history-list {
+    max-height: 240px;
+  }
+
+  .history-header,
+  .history-query-btn,
+  .delete-history-btn {
+    padding: 0.625rem 0.875rem;
   }
 }
 </style>
