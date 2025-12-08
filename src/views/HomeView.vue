@@ -102,10 +102,9 @@ onUnmounted(() => {
   <div>
     <AppHeader />
 
-    <main class="page-container">
-      <!-- Hero Banner -->
-      <Transition name="hero-fade" mode="out-in">
-        <div v-if="heroMovie && !loading" :key="heroMovie.id" class="hero-banner">
+    <!-- Hero Banner -->
+    <Transition name="hero-fade" mode="out-in">
+      <div v-if="heroMovie && !loading" :key="heroMovie.id" class="hero-banner">
           <img
             :src="getBackdropUrl(heroMovie.backdrop_path)"
             :alt="heroMovie.title"
@@ -131,10 +130,11 @@ onUnmounted(() => {
                 <i class="fas fa-play"></i> 상세보기
               </button>
             </div>
-          </div>
         </div>
-      </Transition>
+      </div>
+    </Transition>
 
+    <main class="page-container">
       <div class="container">
         <LoadingSpinner v-if="loading" text="영화 목록을 불러오는 중..." />
 
@@ -197,11 +197,16 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Override page-container padding for hero */
+.page-container {
+  padding-top: 0;
+}
+
 .hero-banner {
   position: relative;
-  height: 70vh;
-  min-height: 550px;
-  max-height: 700px;
+  height: 90vh;
+  min-height: 650px;
+  max-height: 850px;
   margin-bottom: 2rem;
   overflow: hidden;
 }
@@ -223,10 +228,11 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: linear-gradient(
-    0deg,
-    var(--bg-dark) 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.7) 100%
+    180deg,
+    rgba(0, 0, 0, 0.8) 0%,
+    transparent 30%,
+    transparent 60%,
+    var(--bg-dark) 100%
   );
 }
 
