@@ -21,3 +21,6 @@ export type { Genre } from './useApiCache'
 // 시청 기록 관리
 export { useWatchHistory } from './useWatchHistory'
 export type { WatchHistoryItem } from './useWatchHistory'
+
+// 영화 추천
+export { useRecommendations } from './useRecommendations'

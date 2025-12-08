@@ -40,8 +40,9 @@ const loadMovies = async (page: number, append: boolean = false) => {
 
     if (page === 1) {
       // 첫 페이지는 슬라이더용으로 저장
-      firstPageMovies.value = response.results
-      topMovies.value = response.results.slice(0, 10)
+      const movies = response.results
+      topMovies.value = movies.slice(0, 10)
+      firstPageMovies.value = movies.slice(10)
       additionalMovies.value = []
       window.scrollTo({ top: 0, behavior: 'smooth' })
 
@@ -175,22 +176,23 @@ onUnmounted(() => {
           <section class="section">
             <div class="section-header">
               <h2 class="section-title">
-                <i class="fas fa-trophy" style="color: #ffd700"></i> Top 10 인기 영화
+                Top 10 인기 영화
               </h2>
             </div>
 
             <Swiper
               :modules="modules"
-              :slides-per-view="1"
-              :space-between="20"
+              :slides-per-view="2"
+              :space-between="10"
               :navigation="true"
               :pagination="{ clickable: true }"
               :autoplay="{ delay: 3500, disableOnInteraction: false }"
               :breakpoints="{
-                640: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 },
-                1280: { slidesPerView: 5 }
+                480: { slidesPerView: 2, spaceBetween: 15 },
+                640: { slidesPerView: 3, spaceBetween: 15 },
+                768: { slidesPerView: 3, spaceBetween: 20 },
+                1024: { slidesPerView: 4, spaceBetween: 20 },
+                1280: { slidesPerView: 5, spaceBetween: 20 }
               }"
               class="top-movies-slider"
             >
@@ -207,21 +209,21 @@ onUnmounted(() => {
           <section class="section">
             <div class="section-header">
               <h2 class="section-title">
-                <i class="fas fa-fire" style="color: var(--primary-color)"></i>
                 지금 인기 있는 영화
               </h2>
             </div>
 
             <Swiper
               :modules="modules"
-              :slides-per-view="1"
-              :space-between="20"
+              :slides-per-view="2"
+              :space-between="10"
               :navigation="true"
               :breakpoints="{
-                640: { slidesPerView: 2 },
-                768: { slidesPerView: 3 },
-                1024: { slidesPerView: 4 },
-                1280: { slidesPerView: 5 }
+                480: { slidesPerView: 2, spaceBetween: 15 },
+                640: { slidesPerView: 3, spaceBetween: 15 },
+                768: { slidesPerView: 3, spaceBetween: 20 },
+                1024: { slidesPerView: 4, spaceBetween: 20 },
+                1280: { slidesPerView: 5, spaceBetween: 20 }
               }"
               class="movies-slider"
             >
@@ -235,7 +237,6 @@ onUnmounted(() => {
           <section v-if="additionalMovies.length > 0" class="section">
             <div class="section-header">
               <h2 class="section-title">
-                <i class="fas fa-film" style="color: var(--primary-color)"></i>
                 더 많은 인기 영화
               </h2>
               <div class="section-info">
@@ -418,7 +419,7 @@ onUnmounted(() => {
 
 /* Top Movies Slider */
 .top-movies-slider {
-  padding: 1rem 0 3rem;
+  padding: 1rem 0 1.5rem;
 }
 
 .top-movie-card {
@@ -462,27 +463,28 @@ onUnmounted(() => {
 
 /* Movies Slider */
 .movies-slider {
-  padding: 1rem 0 3rem;
+  padding: 1rem 0 1.5rem;
 }
 
 /* Section Styles */
 .section {
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .section-title {
   font-size: 1.8rem;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+}
+
+.section-header h2.section-title {
+  margin-bottom: 0; /* Reset default h2 margin */
 }
 
 .section-info {
