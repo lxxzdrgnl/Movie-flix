@@ -144,3 +144,14 @@ export const getWatchProviders = async (movieId: number): Promise<any> => {
     throw error
   }
 }
+
+export const getAvailableWatchProviders = async (): Promise<any> => {
+  try {
+    const url = createUrl('/watch/providers/movie', { watch_region: 'KR' })
+    const response = await axios.get(url)
+    return response.data
+  } catch (error) {
+    console.error('사용 가능한 플랫폼 목록 요청 실패:', error)
+    throw error
+  }
+}

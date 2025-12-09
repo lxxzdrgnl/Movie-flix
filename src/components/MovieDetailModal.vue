@@ -185,6 +185,43 @@ watch(() => props.show, (newVal) => {
               </p>
             </div>
 
+            <!-- 예고편 섹션 -->
+            <div v-if="loadingDetails" class="modal-section">
+              <h3 class="modal-section-title">예고편 & 영상</h3>
+              <div class="modal-trailers">
+                <div v-for="i in 2" :key="i" class="modal-trailer-item">
+                  <div class="skeleton skeleton-trailer"></div>
+                  <div class="modal-trailer-info">
+                    <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 200px; height: 16px; margin-top: 0.5rem;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Transition name="fade" mode="out-in">
+              <div v-if="!loadingDetails && trailers.length > 0" class="modal-section">
+                <h3 class="modal-section-title">예고편 & 영상</h3>
+                <div class="modal-trailers">
+                  <div v-for="(video, index) in trailers.slice(0, 3)" :key="video.key" class="modal-trailer-item">
+                    <div class="modal-trailer-wrapper">
+                      <iframe
+                        :src="`https://www.youtube.com/embed/${video.key}`"
+                        :title="video.name"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        class="modal-trailer-iframe"
+                      ></iframe>
+                    </div>
+                    <div class="modal-trailer-info">
+                      <span class="modal-trailer-type">{{ video.type }}</span>
+                      <span class="modal-trailer-name">{{ video.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+
             <!-- 시청 가능 플랫폼 섹션 -->
             <div v-if="loadingDetails" class="modal-section">
               <h3 class="modal-section-title">시청 가능 플랫폼</h3>
@@ -249,43 +286,6 @@ watch(() => props.show, (newVal) => {
                       자세한 정보 보기
                     </a>
                   </p>
-                </div>
-              </div>
-            </Transition>
-
-            <!-- 예고편 섹션 -->
-            <div v-if="loadingDetails" class="modal-section">
-              <h3 class="modal-section-title">예고편 & 영상</h3>
-              <div class="modal-trailers">
-                <div v-for="i in 2" :key="i" class="modal-trailer-item">
-                  <div class="skeleton skeleton-trailer"></div>
-                  <div class="modal-trailer-info">
-                    <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 200px; height: 16px; margin-top: 0.5rem;"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Transition name="fade" mode="out-in">
-              <div v-if="!loadingDetails && trailers.length > 0" class="modal-section">
-                <h3 class="modal-section-title">예고편 & 영상</h3>
-                <div class="modal-trailers">
-                  <div v-for="(video, index) in trailers.slice(0, 3)" :key="video.key" class="modal-trailer-item">
-                    <div class="modal-trailer-wrapper">
-                      <iframe
-                        :src="`https://www.youtube.com/embed/${video.key}`"
-                        :title="video.name"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                        class="modal-trailer-iframe"
-                      ></iframe>
-                    </div>
-                    <div class="modal-trailer-info">
-                      <span class="modal-trailer-type">{{ video.type }}</span>
-                      <span class="modal-trailer-name">{{ video.name }}</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </Transition>
