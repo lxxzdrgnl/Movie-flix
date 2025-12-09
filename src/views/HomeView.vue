@@ -5,6 +5,7 @@ import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
 import MovieCard from '@/components/MovieCard.vue'
 import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -543,6 +544,8 @@ onUnmounted(() => {
         </div>
       </div>
     </main>
+
+    <AppFooter />
 
     <MovieDetailModal :movie="selectedMovie" :show="showModal" @close="handleCloseModal" />
   </div>

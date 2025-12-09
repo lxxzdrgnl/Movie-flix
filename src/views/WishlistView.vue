@@ -5,6 +5,7 @@ import { Navigation, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import AppHeader from '@/components/AppHeader.vue'
+import AppFooter from '@/components/AppFooter.vue'
 import MovieCard from '@/components/MovieCard.vue'
 import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
@@ -21,7 +22,6 @@ const selectedMovie = ref<Movie | null>(null)
 const showModal = ref(false)
 const sortBy = ref<string>('date_added') // 추가된 순서
 const filterGenre = ref<string>('')
-const viewMode = ref<'grid' | 'list'>('grid')
 
 const modules = [Navigation, Autoplay]
 
@@ -329,6 +329,8 @@ watch(wishlist, (newWishlist) => {
         </div>
       </div>
     </main>
+
+    <AppFooter />
 
     <MovieDetailModal :movie="selectedMovie" :show="showModal" @close="handleCloseModal" />
   </div>
