@@ -14,7 +14,7 @@ const genres = ref<Genre[]>([])
 const loading = ref(false)
 const selectedGenre = ref<string>('')
 const selectedRating = ref<string>('')
-const sortBy = ref<string>('popularity.desc')
+const sortBy = ref<string>('random') // Changed to 'random'
 const selectedMovie = ref<Movie | null>(null)
 const showModal = ref(false)
 const searchQuery = ref<string>('')
@@ -31,6 +31,15 @@ const { addSearchQuery, removeSearchQuery, clearSearchHistory, getRecentSearches
 
 // 최근 검색어 가져오기 (최대 10개)
 const recentSearches = computed(() => getRecentSearches(10))
+
+// 배열 섞기 함수 (Fisher-Yates shuffle)
+const shuffleArray = (array: Movie[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
 
 const loadGenres = async () => {
   try {
@@ -77,7 +86,9 @@ const searchMovies = async (append: boolean = false) => {
       }
 
       // 정렬 적용
-      if (sortBy.value === 'popularity.desc') {
+      if (sortBy.value === 'random') {
+        newMovies = shuffleArray(newMovies); // Shuffle for random
+      } else if (sortBy.value === 'popularity.desc') {
         newMovies.sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
       } else if (sortBy.value === 'popularity.asc') {
         newMovies.sort((a, b) => (a.popularity || 0) - (b.popularity || 0))
@@ -104,9 +115,18 @@ const searchMovies = async (append: boolean = false) => {
     } else {
       // 검색어가 없으면 기존 discover API 사용
       const params: Record<string, string | number> = {
-        sort_by: sortBy.value,
         page: page,
       }
+      // sort_by가 'random'이 아닌 경우에만 API에 정렬 파라미터 전송
+      if (sortBy.value !== 'random') {
+        params.sort_by = sortBy.value
+      } else {
+        // 'random'일 경우, 기본 정렬 기준을 사용하거나 파라미터를 아예 보내지 않음 (여기서는 인기순을 기본으로)
+        // TMDB discover API는 sort_by가 없으면 기본으로 popularity.desc로 정렬됨
+        // 또는, 명시적으로 다른 기준을 지정할 수 있음
+        // params.sort_by = 'popularity.desc'; // 명시적으로 인기순을 기본으로 할 경우
+      }
+
 
       if (selectedGenre.value) {
         params.with_genres = selectedGenre.value
@@ -118,10 +138,15 @@ const searchMovies = async (append: boolean = false) => {
 
       const response = await discoverMovies(params)
 
+      let resultsToDisplay = response.results;
+      if (sortBy.value === 'random') {
+          resultsToDisplay = shuffleArray(resultsToDisplay); // Shuffle for random
+      }
+
       if (append) {
-        movies.value = [...movies.value, ...response.results]
+        movies.value = [...movies.value, ...resultsToDisplay]
       } else {
-        movies.value = response.results
+        movies.value = resultsToDisplay
       }
 
       hasMorePages.value = page < response.total_pages
@@ -139,7 +164,7 @@ const resetFilters = () => {
   searchQuery.value = ''
   selectedGenre.value = ''
   selectedRating.value = ''
-  sortBy.value = 'popularity.desc'
+  sortBy.value = 'random' // Changed to 'random'
   currentPage.value = 1
   searchMovies()
 }
@@ -338,6 +363,7 @@ onUnmounted(() => {
             <div class="filter-group">
               <label class="filter-label" for="sort">정렬</label>
               <select id="sort" class="filter-select" v-model="sortBy" @change="handleFilterChange">
+                <option value="random">랜덤</option> <!-- Added random sort option -->
                 <option value="popularity.desc">인기순 (높은순)</option>
                 <option value="popularity.asc">인기순 (낮은순)</option>
                 <option value="vote_average.desc">평점순 (높은순)</option>
@@ -427,7 +453,7 @@ onUnmounted(() => {
 }
 
 .clear-input-btn:hover {
-  color: var(--text-primary);
+  color: var(--primary-color);
 }
 
 .search-icon {

@@ -118,6 +118,10 @@ watch(wishlist, (newWishlist) => {
   font-size: 0.95rem;
 }
 
+.section-header h1.section-title {
+  margin-bottom: 0.25rem;
+}
+
 .recommendations-section {
   margin-top: 4rem;
   padding-top: 3rem;
@@ -128,16 +132,15 @@ watch(wishlist, (newWishlist) => {
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.25rem;
 }
 
-.recommendations-section .section-title {
-  font-size: 1.8rem;
-  font-weight: 700;
+.recommendations-section .section-header h2.section-title {
+  margin-bottom: 0;
 }
 
 .recommendations-slider {
-  padding: 1rem 0 3rem;
+  padding: 1rem 0 1.5rem;
 }
 
 /* Swiper Custom Styles */

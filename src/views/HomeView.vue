@@ -303,6 +303,30 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
+              <h2 class="section-title">높은 평점</h2>
+            </div>
+            <Swiper
+              :modules="modules"
+              :slides-per-view="2"
+              :space-between="10"
+              :navigation="true"
+              :breakpoints="{
+                480: { slidesPerView: 2, spaceBetween: 15 },
+                640: { slidesPerView: 3, spaceBetween: 15 },
+                768: { slidesPerView: 3, spaceBetween: 20 },
+                1024: { slidesPerView: 4, spaceBetween: 20 },
+                1280: { slidesPerView: 5, spaceBetween: 20 }
+              }"
+              class="movies-slider"
+            >
+              <SwiperSlide v-for="movie in topRatedMovies" :key="movie.id">
+                <MovieCard :movie="movie" @click="handleMovieClick" />
+              </SwiperSlide>
+            </Swiper>
+          </section>
+
+          <section class="section">
+            <div class="section-header">
               <h2 class="section-title">한국 인기 영화</h2>
             </div>
             <Swiper
@@ -512,30 +536,6 @@ onUnmounted(() => {
               class="movies-slider"
             >
               <SwiperSlide v-for="movie in documentaryMovies" :key="movie.id">
-                <MovieCard :movie="movie" @click="handleMovieClick" />
-              </SwiperSlide>
-            </Swiper>
-          </section>
-
-          <section class="section">
-            <div class="section-header">
-              <h2 class="section-title">높은 평점</h2>
-            </div>
-            <Swiper
-              :modules="modules"
-              :slides-per-view="2"
-              :space-between="10"
-              :navigation="true"
-              :breakpoints="{
-                480: { slidesPerView: 2, spaceBetween: 15 },
-                640: { slidesPerView: 3, spaceBetween: 15 },
-                768: { slidesPerView: 3, spaceBetween: 20 },
-                1024: { slidesPerView: 4, spaceBetween: 20 },
-                1280: { slidesPerView: 5, spaceBetween: 20 }
-              }"
-              class="movies-slider"
-            >
-              <SwiperSlide v-for="movie in topRatedMovies" :key="movie.id">
                 <MovieCard :movie="movie" @click="handleMovieClick" />
               </SwiperSlide>
             </Swiper>

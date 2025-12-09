@@ -133,3 +133,14 @@ export const getMovieRecommendations = (
 export const getSimilarMovies = (movieId: number, page: number = 1): Promise<MovieResponse> => {
   return fetchMovies(`/movie/${movieId}/similar`, { page })
 }
+
+export const getWatchProviders = async (movieId: number): Promise<any> => {
+  try {
+    const url = createUrl(`/movie/${movieId}/watch/providers`)
+    const response = await axios.get(url)
+    return response.data
+  } catch (error) {
+    console.error('시청 플랫폼 정보 요청 실패:', error)
+    throw error
+  }
+}
