@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useWishlist } from '@/composables/useWishlist'
+import { useTheme } from '@/composables/useTheme'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const { wishlistCount } = useWishlist()
+const { currentTheme, toggleTheme } = useTheme()
+
+const isDark = computed(() => currentTheme.value === 'dark')
 
 const isScrolled = ref(false)
 const showBrowseMenu = ref(false)
@@ -142,6 +146,10 @@ onUnmounted(() => {
           </div>
         </nav>
 
+        <button class="btn-icon theme-toggle" @click="toggleTheme" :title="isDark ? '라이트 모드' : '다크 모드'">
+          <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        </button>
+
         <div class="header-user header-user-desktop">
           <span class="header-user-name">{{ authStore.user }}</span>
         </div>
@@ -208,6 +216,12 @@ onUnmounted(() => {
   backdrop-filter: blur(10px);
   border-radius: 8px;
   min-width: 200px;
+}
+
+[data-theme='light'] .browse-dropdown {
+  background-color: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   padding: 0.5rem 0;
   z-index: 1000;
@@ -287,6 +301,23 @@ onUnmounted(() => {
 .dropdown-leave-to {
   opacity: 0;
   transform: translateY(-5px);
+}
+
+.theme-toggle {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-speed) var(--transition-ease);
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-light);
+  border-color: var(--primary-color);
+  transform: rotate(20deg);
+}
+
+.theme-toggle i {
+  font-size: 1.1rem;
 }
 
 .header-logout {
