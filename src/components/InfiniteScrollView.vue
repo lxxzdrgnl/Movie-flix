@@ -23,16 +23,29 @@ const loadMovies = async (page: number, append: boolean = false) => {
       loading.value = true
     }
 
-    const response = await getPopularMovies(page)
+    // Load 30 movies by combining results from two API pages
+    // Display page 2 -> API pages 2,3
+    // Display page 3 -> API pages 4,5
+    const apiPage1 = (page - 2) * 2 + 2
+    const apiPage2 = apiPage1 + 1
+
+    const [response1, response2] = await Promise.all([
+      getPopularMovies(apiPage1),
+      getPopularMovies(apiPage2)
+    ])
+
+    // Combine and take first 30 movies
+    const allMovies = [...response1.results, ...response2.results]
+    const newMovies = allMovies.slice(0, 30)
 
     if (append) {
-      movies.value = [...movies.value, ...response.results]
+      movies.value = [...movies.value, ...newMovies]
     } else {
-      movies.value = response.results
+      movies.value = newMovies
     }
 
     currentPage.value = page
-    totalPages.value = response.total_pages
+    totalPages.value = Math.ceil(response1.total_results / 30)
   } catch (err) {
     console.error('영화 데이터 로드 실패:', err)
   } finally {
@@ -70,7 +83,7 @@ onUnmounted(() => {
     <Transition name="fade" mode="out-in">
       <!-- Initial Loading Skeleton -->
       <div v-if="loading" key="loading" class="movie-grid">
-        <MovieCardSkeleton v-for="i in 20" :key="'skeleton-' + i" />
+        <MovieCardSkeleton v-for="i in 30" :key="'skeleton-' + i" />
       </div>
 
       <!-- Movies Grid -->

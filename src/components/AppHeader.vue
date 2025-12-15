@@ -16,10 +16,22 @@ const isDark = computed(() => currentTheme.value === 'dark')
 const isScrolled = ref(false)
 const showBrowseMenu = ref(false)
 
+// 홈과 인기 페이지 확인
+const isHeroPage = computed(() => {
+  return route.path === '/' || route.path === '/popular'
+})
+
+// 헤더 배경 상태 계산
+const headerScrolled = computed(() => {
+  // 홈과 인기 페이지가 아니면 항상 scrolled 상태
+  if (!isHeroPage.value) return true
+  // 홈과 인기 페이지면 스크롤에 따라 변경
+  return isScrolled.value
+})
+
 const handleScroll = () => {
-  // 히어로 배너 높이(90vh - 100px 정도) 이후에 헤더 배경 활성화
-  const heroHeight = window.innerHeight * 0.9 - 100
-  isScrolled.value = window.scrollY > heroHeight
+  // 스크롤 300px 이후에 헤더 배경 활성화 (더 빠르게 배경 표시)
+  isScrolled.value = window.scrollY > 300
 }
 
 const handleLogout = () => {
@@ -63,7 +75,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="header" :class="{ scrolled: isScrolled }">
+  <header class="header" :class="{ scrolled: headerScrolled }">
     <div class="header-container">
       <div class="header-logo" @click="goHome">MOVIEFLIX</div>
 
@@ -278,6 +290,11 @@ onUnmounted(() => {
 .wishlist-count {
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+[data-theme='light'] .header:not(.scrolled) .wishlist-count {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .wishlist-badge {

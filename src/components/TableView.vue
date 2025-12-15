@@ -7,6 +7,7 @@ import { getPopularMovies } from '@/utils/tmdb'
 
 const emit = defineEmits<{
   (e: 'movieClick', movie: Movie): void
+  (e: 'pageChange'): void
 }>()
 
 const movies = ref<Movie[]>([])
@@ -17,10 +18,28 @@ const totalPages = ref(1)
 const loadMovies = async (page: number) => {
   try {
     loading.value = true
-    const response = await getPopularMovies(page)
-    movies.value = response.results
+
+    // Load 30 movies by combining results from two API pages
+    // Display page 2 -> API pages 2,3
+    // Display page 3 -> API pages 4,5
+    // Display page 4 -> API pages 6,7
+    const apiPage1 = (page - 2) * 2 + 2
+    const apiPage2 = apiPage1 + 1
+
+    const [response1, response2] = await Promise.all([
+      getPopularMovies(apiPage1),
+      getPopularMovies(apiPage2)
+    ])
+
+    // Combine and take first 30 movies
+    const allMovies = [...response1.results, ...response2.results]
+    movies.value = allMovies.slice(0, 30)
+
     currentPage.value = page
-    totalPages.value = response.total_pages
+    totalPages.value = Math.ceil(response1.total_results / 30)
+
+    // Notify parent to scroll to section
+    emit('pageChange')
   } catch (err) {
     console.error('영화 데이터 로드 실패:', err)
   } finally {
@@ -60,7 +79,7 @@ onMounted(() => {
     <!-- Loading Skeleton -->
     <Transition name="page-fade" mode="out-in">
       <div v-if="loading" key="loading" class="table-view-grid">
-        <MovieCardSkeleton v-for="i in 20" :key="'skeleton-' + i" />
+        <MovieCardSkeleton v-for="i in 30" :key="'skeleton-' + i" />
       </div>
 
       <!-- Movies Grid -->
@@ -107,12 +126,11 @@ onMounted(() => {
 
 .page-fade-enter-from {
   opacity: 0;
-  transform: translateX(20px);
+  transform: translateY(10px);
 }
 
 .page-fade-leave-to {
   opacity: 0;
-  transform: translateX(-20px);
 }
 
 .table-view-grid {
@@ -147,7 +165,7 @@ onMounted(() => {
 
 .pagination-btn:hover:not(:disabled) {
   background-color: var(--primary-color);
-  color: white;
+  color: var(--text-primary);
   border-color: var(--primary-color);
   transform: translateY(-2px);
 }
