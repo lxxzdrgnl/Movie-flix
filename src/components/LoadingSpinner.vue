@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 interface Props {
   text?: string
 }
 
 withDefaults(defineProps<Props>(), {
-  text: '로딩 중...',
+  text: ''
 })
 </script>
 
@@ -12,7 +16,7 @@ withDefaults(defineProps<Props>(), {
   <div class="loading-container">
     <div class="loading-content">
       <div class="loading-spinner"></div>
-      <p class="loading-text">{{ text }}</p>
+      <p class="loading-text">{{ text || t('loading') }}</p>
     </div>
   </div>
 </template>

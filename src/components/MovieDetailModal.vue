@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Movie } from '@/types/movie'
 import { getPosterUrl, getBackdropUrl, getMovieDetails, getWatchProviders } from '@/utils/tmdb'
 import { useWishlist } from '@/composables/useWishlist'
@@ -16,27 +17,18 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const { t } = useI18n()
 const movieDetails = ref<any>(null)
 const loadingDetails = ref(false)
 const watchProviders = ref<any>(null)
 
 const { toggleWishlist, isInWishlist } = useWishlist()
 
-const backdropUrl = computed(() =>
-  props.movie ? getBackdropUrl(props.movie.backdrop_path) : ''
-)
-const posterUrl = computed(() =>
-  props.movie ? getPosterUrl(props.movie.poster_path) : ''
-)
-const rating = computed(() =>
-  props.movie ? props.movie.vote_average.toFixed(1) : '0.0'
-)
-const releaseYear = computed(() =>
-  props.movie?.release_date?.split('-')[0] || 'N/A'
-)
-const isWishlisted = computed(() =>
-  props.movie ? isInWishlist(props.movie.id) : false
-)
+const backdropUrl = computed(() => (props.movie ? getBackdropUrl(props.movie.backdrop_path) : ''))
+const posterUrl = computed(() => (props.movie ? getPosterUrl(props.movie.poster_path) : ''))
+const rating = computed(() => (props.movie ? props.movie.vote_average.toFixed(1) : '0.0'))
+const releaseYear = computed(() => props.movie?.release_date?.split('-')[0] || 'N/A')
+const isWishlisted = computed(() => (props.movie ? isInWishlist(props.movie.id) : false))
 
 const handleClose = () => {
   emit('close')
@@ -90,7 +82,9 @@ const runtime = computed(() => {
   if (minutes === 0) return 'N/A'
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
-  return hours > 0 ? `${hours}시간 ${mins}분` : `${mins}분`
+  return hours > 0
+    ? t('movieDetail.runtimeFormat.hoursMinutes', { hours, minutes: mins })
+    : t('movieDetail.runtimeFormat.minutes', { minutes: mins })
 })
 
 const budget = computed(() => {
@@ -112,7 +106,10 @@ const trailers = computed(() => {
     .filter((video: any) => video.site === 'YouTube')
     .sort((a: any, b: any) => {
       const typeOrder = { Trailer: 1, Teaser: 2, Clip: 3 }
-      return (typeOrder[a.type as keyof typeof typeOrder] || 4) - (typeOrder[b.type as keyof typeof typeOrder] || 4)
+      return (
+        (typeOrder[a.type as keyof typeof typeOrder] || 4) -
+        (typeOrder[b.type as keyof typeof typeOrder] || 4)
+      )
     })
 })
 
@@ -128,21 +125,24 @@ const krProviders = computed(() => {
   }
 })
 
-watch(() => props.show, (newVal) => {
-  if (newVal && props.movie) {
-    loadMovieDetails()
-  } else {
-    movieDetails.value = null
-    watchProviders.value = null
+watch(
+  () => props.show,
+  (newVal) => {
+    if (newVal && props.movie) {
+      loadMovieDetails()
+    } else {
+      movieDetails.value = null
+      watchProviders.value = null
+    }
   }
-})
+)
 </script>
 
 <template>
   <Transition name="modal">
     <div v-if="show && movie" class="modal-backdrop" @click="handleBackdropClick">
       <div class="modal-container">
-        <button class="modal-close-btn" @click="handleClose" aria-label="닫기">
+        <button class="modal-close-btn" @click="handleClose" :aria-label="t('movieDetail.close')">
           <i class="fas fa-times"></i>
         </button>
 
@@ -158,7 +158,7 @@ watch(() => props.show, (newVal) => {
               </span>
               <span class="modal-year">{{ releaseYear }}</span>
               <span v-if="movie.vote_count" class="modal-votes">
-                {{ movie.vote_count.toLocaleString() }} votes
+                {{ t('movieDetail.votes', { count: movie.vote_count.toLocaleString() }) }}
               </span>
             </div>
           </div>
@@ -173,36 +173,47 @@ watch(() => props.show, (newVal) => {
               @click="handleWishlistToggle"
             >
               <i :class="isWishlisted ? 'fas fa-heart' : 'far fa-heart'"></i>
-              {{ isWishlisted ? '찜 취소' : '내가 찜한 콘텐츠' }}
+              {{
+                isWishlisted
+                  ? t('movieDetail.removeFromWishlist')
+                  : t('movieDetail.addToWishlist')
+              }}
             </button>
           </div>
 
           <div class="modal-info-section">
             <div class="modal-section">
-              <h3 class="modal-section-title">줄거리</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.overview') }}</h3>
               <p class="modal-overview">
-                {{ movie.overview || '줄거리 정보가 없습니다.' }}
+                {{ movie.overview || t('movieDetail.noOverview') }}
               </p>
             </div>
 
             <!-- 예고편 섹션 -->
             <div v-if="loadingDetails" class="modal-section">
-              <h3 class="modal-section-title">예고편 & 영상</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.trailersAndVideos') }}</h3>
               <div class="modal-trailers">
                 <div v-for="i in 2" :key="i" class="modal-trailer-item">
                   <div class="skeleton skeleton-trailer"></div>
                   <div class="modal-trailer-info">
-                    <div class="skeleton skeleton-text" style="width: 80px; height: 20px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 200px; height: 16px; margin-top: 0.5rem;"></div>
+                    <div class="skeleton skeleton-text" style="width: 80px; height: 20px"></div>
+                    <div
+                      class="skeleton skeleton-text"
+                      style="width: 200px; height: 16px; margin-top: 0.5rem"
+                    ></div>
                   </div>
                 </div>
               </div>
             </div>
             <Transition name="fade" mode="out-in">
               <div v-if="!loadingDetails && trailers.length > 0" class="modal-section">
-                <h3 class="modal-section-title">예고편 & 영상</h3>
+                <h3 class="modal-section-title">{{ t('movieDetail.trailersAndVideos') }}</h3>
                 <div class="modal-trailers">
-                  <div v-for="(video, index) in trailers.slice(0, 3)" :key="video.key" class="modal-trailer-item">
+                  <div
+                    v-for="(video, index) in trailers.slice(0, 3)"
+                    :key="video.key"
+                    class="modal-trailer-item"
+                  >
                     <div class="modal-trailer-wrapper">
                       <iframe
                         :src="`https://www.youtube.com/embed/${video.key}`"
@@ -224,10 +235,13 @@ watch(() => props.show, (newVal) => {
 
             <!-- 시청 가능 플랫폼 섹션 -->
             <div v-if="loadingDetails" class="modal-section">
-              <h3 class="modal-section-title">시청 가능 플랫폼</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.providers') }}</h3>
               <div class="modal-providers">
                 <div class="modal-provider-group">
-                  <div class="skeleton skeleton-text" style="width: 80px; height: 20px; margin-bottom: 0.75rem;"></div>
+                  <div
+                    class="skeleton skeleton-text"
+                    style="width: 80px; height: 20px; margin-bottom: 0.75rem"
+                  ></div>
                   <div class="modal-provider-list">
                     <div v-for="i in 3" :key="i" class="skeleton skeleton-provider"></div>
                   </div>
@@ -236,12 +250,16 @@ watch(() => props.show, (newVal) => {
             </div>
             <Transition name="fade" mode="out-in">
               <div v-if="!loadingDetails && krProviders" class="modal-section">
-                <h3 class="modal-section-title">시청 가능 플랫폼</h3>
+                <h3 class="modal-section-title">{{ t('movieDetail.providers') }}</h3>
                 <div class="modal-providers">
                   <div v-if="krProviders.flatrate.length > 0" class="modal-provider-group">
-                    <h4 class="modal-provider-label">스트리밍</h4>
+                    <h4 class="modal-provider-label">{{ t('movieDetail.streaming') }}</h4>
                     <div class="modal-provider-list">
-                      <div v-for="provider in krProviders.flatrate" :key="provider.provider_id" class="modal-provider-item">
+                      <div
+                        v-for="provider in krProviders.flatrate"
+                        :key="provider.provider_id"
+                        class="modal-provider-item"
+                      >
                         <img
                           :src="`https://image.tmdb.org/t/p/original${provider.logo_path}`"
                           :alt="provider.provider_name"
@@ -253,9 +271,13 @@ watch(() => props.show, (newVal) => {
                   </div>
 
                   <div v-if="krProviders.rent.length > 0" class="modal-provider-group">
-                    <h4 class="modal-provider-label">대여</h4>
+                    <h4 class="modal-provider-label">{{ t('movieDetail.rent') }}</h4>
                     <div class="modal-provider-list">
-                      <div v-for="provider in krProviders.rent" :key="provider.provider_id" class="modal-provider-item">
+                      <div
+                        v-for="provider in krProviders.rent"
+                        :key="provider.provider_id"
+                        class="modal-provider-item"
+                      >
                         <img
                           :src="`https://image.tmdb.org/t/p/original${provider.logo_path}`"
                           :alt="provider.provider_name"
@@ -267,9 +289,13 @@ watch(() => props.show, (newVal) => {
                   </div>
 
                   <div v-if="krProviders.buy.length > 0" class="modal-provider-group">
-                    <h4 class="modal-provider-label">구매</h4>
+                    <h4 class="modal-provider-label">{{ t('movieDetail.buy') }}</h4>
                     <div class="modal-provider-list">
-                      <div v-for="provider in krProviders.buy" :key="provider.provider_id" class="modal-provider-item">
+                      <div
+                        v-for="provider in krProviders.buy"
+                        :key="provider.provider_id"
+                        class="modal-provider-item"
+                      >
                         <img
                           :src="`https://image.tmdb.org/t/p/original${provider.logo_path}`"
                           :alt="provider.provider_name"
@@ -281,9 +307,14 @@ watch(() => props.show, (newVal) => {
                   </div>
 
                   <p v-if="krProviders.link" class="modal-provider-note">
-                    <a :href="krProviders.link" target="_blank" rel="noopener noreferrer" class="modal-provider-link">
+                    <a
+                      :href="krProviders.link"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="modal-provider-link"
+                    >
                       <i class="fas fa-external-link-alt"></i>
-                      자세한 정보 보기
+                      {{ t('movieDetail.moreInfo') }}
                     </a>
                   </p>
                 </div>
@@ -292,14 +323,14 @@ watch(() => props.show, (newVal) => {
 
             <!-- 장르 섹션 -->
             <div v-if="loadingDetails" class="modal-section">
-              <h3 class="modal-section-title">장르</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.genres') }}</h3>
               <div class="modal-genres">
                 <div v-for="i in 3" :key="i" class="skeleton skeleton-genre"></div>
               </div>
             </div>
             <Transition name="fade" mode="out-in">
               <div v-if="!loadingDetails && genres.length > 0" class="modal-section">
-                <h3 class="modal-section-title">장르</h3>
+                <h3 class="modal-section-title">{{ t('movieDetail.genres') }}</h3>
                 <div class="modal-genres">
                   <span v-for="genre in genres" :key="genre.id" class="modal-genre-tag">
                     {{ genre.name }}
@@ -310,17 +341,20 @@ watch(() => props.show, (newVal) => {
 
             <!-- 출연진 섹션 -->
             <div v-if="loadingDetails" class="modal-section">
-              <h3 class="modal-section-title">출연진</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.cast') }}</h3>
               <div class="modal-cast-list">
                 <div v-for="i in 5" :key="i" class="modal-cast-item">
-                  <div class="skeleton skeleton-text" style="width: 120px; height: 18px;"></div>
-                  <div class="skeleton skeleton-text" style="width: 160px; height: 16px; margin-top: 0.25rem;"></div>
+                  <div class="skeleton skeleton-text" style="width: 120px; height: 18px"></div>
+                  <div
+                    class="skeleton skeleton-text"
+                    style="width: 160px; height: 16px; margin-top: 0.25rem"
+                  ></div>
                 </div>
               </div>
             </div>
             <Transition name="fade" mode="out-in">
               <div v-if="!loadingDetails && cast.length > 0" class="modal-section">
-                <h3 class="modal-section-title">출연진</h3>
+                <h3 class="modal-section-title">{{ t('movieDetail.cast') }}</h3>
                 <div class="modal-cast-list">
                   <div v-for="person in cast" :key="person.id" class="modal-cast-item">
                     <span class="modal-cast-name">{{ person.name }}</span>
@@ -331,45 +365,49 @@ watch(() => props.show, (newVal) => {
             </Transition>
 
             <div class="modal-section">
-              <h3 class="modal-section-title">상세 정보</h3>
+              <h3 class="modal-section-title">{{ t('movieDetail.details') }}</h3>
               <div class="modal-details">
                 <div v-if="director" class="modal-detail-item">
-                  <span class="modal-detail-label">감독:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.director') }}</span>
                   <span class="modal-detail-value">{{ director.name }}</span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">개봉일:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.releaseDate') }}</span>
                   <span class="modal-detail-value">{{ movie.release_date || 'N/A' }}</span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">상영시간:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.runtime') }}</span>
                   <span class="modal-detail-value">{{ runtime }}</span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">원제:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.originalTitle') }}</span>
                   <span class="modal-detail-value">{{ movie.original_title || movie.title }}</span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">언어:</span>
-                  <span class="modal-detail-value">{{ movie.original_language?.toUpperCase() || 'N/A' }}</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.language') }}</span>
+                  <span class="modal-detail-value">{{
+                    movie.original_language?.toUpperCase() || 'N/A'
+                  }}</span>
                 </div>
                 <div v-if="budget !== 'N/A'" class="modal-detail-item">
-                  <span class="modal-detail-label">제작비:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.budget') }}</span>
                   <span class="modal-detail-value">{{ budget }}</span>
                 </div>
                 <div v-if="revenue !== 'N/A'" class="modal-detail-item">
-                  <span class="modal-detail-label">수익:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.revenue') }}</span>
                   <span class="modal-detail-value">{{ revenue }}</span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">평점:</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.rating') }}</span>
                   <span class="modal-detail-value">
                     ⭐ {{ movie.vote_average.toFixed(1) }} / 10
                   </span>
                 </div>
                 <div class="modal-detail-item">
-                  <span class="modal-detail-label">투표 수:</span>
-                  <span class="modal-detail-value">{{ movie.vote_count?.toLocaleString() || 'N/A' }}</span>
+                  <span class="modal-detail-label">{{ t('movieDetail.voteCount') }}</span>
+                  <span class="modal-detail-value">{{
+                    movie.vote_count?.toLocaleString() || 'N/A'
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -402,10 +440,6 @@ watch(() => props.show, (newVal) => {
   max-width: 900px;
   width: 100%;
   max-height: 90vh;
-}
-
-[data-theme='light'] .modal-container {
-  background-color: #ffffff;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
@@ -413,6 +447,10 @@ watch(() => props.show, (newVal) => {
   /* 스크롤바 숨기기 */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+}
+
+[data-theme='light'] .modal-container {
+  background-color: #ffffff;
 }
 
 .modal-container::-webkit-scrollbar {
@@ -460,21 +498,11 @@ watch(() => props.show, (newVal) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    0deg,
-    #141414 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.7) 100%
-  );
+  background: linear-gradient(0deg, #141414 0%, transparent 50%, rgba(0, 0, 0, 0.7) 100%);
 }
 
 [data-theme='light'] .modal-header-overlay {
-  background: linear-gradient(
-    0deg,
-    #f5f5f5 0%,
-    transparent 50%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
+  background: linear-gradient(0deg, #f5f5f5 0%, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
 }
 
 .modal-header-content {

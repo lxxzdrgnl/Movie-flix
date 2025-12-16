@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Movie } from '@/types/movie'
 import { getPosterUrl } from '@/utils/tmdb'
 import { useWishlist } from '@/composables/useWishlist'
+
+const { t } = useI18n()
 
 interface Props {
   movie: Movie
@@ -39,14 +42,14 @@ const handleCardClick = () => {
       class="movie-card-wishlist"
       :class="{ active: isWishlisted }"
       @click="handleWishlistToggle"
-      :aria-label="isWishlisted ? '찜 취소' : '찜하기'"
+      :aria-label="isWishlisted ? t('movieCard.wishlistRemove') : t('movieCard.wishlistAdd')"
     >
       <i :class="isWishlisted ? 'fas fa-heart' : 'far fa-heart'"></i>
     </button>
 
     <div class="movie-card-overlay">
       <div class="movie-card-click-hint">
-        <i class="fas fa-info-circle"></i> 자세히 보기
+        <i class="fas fa-info-circle"></i> {{ t('movieCard.details') }}
       </div>
 
       <div class="movie-card-content">
@@ -59,7 +62,7 @@ const handleCardClick = () => {
           <span>{{ releaseYear }}</span>
         </div>
         <p class="movie-card-overview">
-          {{ movie.overview || '설명이 없습니다.' }}
+          {{ movie.overview || t('movieCard.noOverview') }}
         </p>
       </div>
     </div>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const currentYear = new Date().getFullYear()
 </script>
 
@@ -34,10 +36,10 @@ const currentYear = new Date().getFullYear()
 
         <div class="footer-info">
           <p class="footer-text">
-            © {{ currentYear }} MovieFlix. All rights reserved.
+            {{ t('footer.rights', { year: currentYear }) }}
           </p>
           <p class="footer-attribution">
-            This product uses the TMDB API but is not endorsed or certified by TMDB.
+            {{ t('footer.attribution') }}
           </p>
         </div>
       </div>

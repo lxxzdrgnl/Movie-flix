@@ -145,7 +145,7 @@ a:hover {
 .btn-ghost {
   background-color: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--text-primary);
+  border: none;
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -155,9 +155,11 @@ a:hover {
 
 .btn-icon {
   padding: 0.5rem;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  background-color: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== Input Styles ===== */
@@ -253,7 +255,7 @@ a:hover {
 .header-container {
   max-width: 1920px;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;

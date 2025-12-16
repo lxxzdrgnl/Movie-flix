@@ -1,0 +1,264 @@
+{
+  "header": {
+    "home": "Home",
+    "popular": "Popular",
+    "search": "Search",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "language": "Language",
+    "browse": "Browse",
+    "popularContent": "Popular Content",
+    "toggleTheme": "Toggle Theme"
+  },
+  "wishlist": {
+    "myList": "My List",
+    "myWishlist": "My Wishlist",
+    "title": "My Wishlist",
+    "totalMovies": "Total {count} movies",
+    "stats": {
+      "total": "Saved Movies",
+      "watchTime": "Approx. {hours} hours",
+      "favoriteGenre": "Favorite Genre",
+      "genreCount": "{count} movies ({percentage}%)",
+      "favoriteDecade": "Preferred Era",
+      "decadeCount": "{count} movies ({percentage}%)",
+      "movieTaste": "Movie Taste",
+      "korean": "Korean",
+      "global": "Global",
+      "koreanMovies": "Korean {korean} ({percentage}%) • Global {global}"
+    },
+    "filters": {
+      "genre": "Genre",
+      "all": "All",
+      "sort": "Sort",
+      "sortBy": {
+        "date_added": "Date Added",
+        "rating_desc": "Rating (High to Low)",
+        "rating_asc": "Rating (Low to High)",
+        "title_asc": "Title (A-Z)",
+        "release_date_desc": "Release Date (Newest)",
+        "release_date_asc": "Release Date (Oldest)"
+      },
+      "results": "{count} movies",
+      "filteredBy": "• Filtered by {genre}"
+    },
+    "recommendations": {
+      "title": "Movies You Might Like",
+      "subtitle": "Recommended based on your wishlist",
+      "loading": "Finding recommendations..."
+    },
+    "empty": {
+      "title": "No movies in your wishlist",
+      "description": "Add movies you like to your wishlist!\nClick the heart icon on a movie card to add it to this list.",
+      "browse": "Browse Movies"
+    },
+    "decades": {
+      "2020s": "2020s",
+      "2010s": "2010s",
+      "2000s": "2000s",
+      "1990s": "1990s",
+      "classic": "Classic"
+    },
+    "genres": {
+      "Action": "Action",
+      "Adventure": "Adventure",
+      "Animation": "Animation",
+      "Comedy": "Comedy",
+      "Crime": "Crime",
+      "Documentary": "Documentary",
+      "Drama": "Drama",
+      "Family": "Family",
+      "Fantasy": "Fantasy",
+      "History": "History",
+      "Horror": "Horror",
+      "Music": "Music",
+      "Mystery": "Mystery",
+      "Romance": "Romance",
+      "Science Fiction": "Science Fiction",
+      "TV Movie": "TV Movie",
+      "Thriller": "Thriller",
+      "War": "War",
+      "Western": "Western",
+      "Other": "Other"
+    }
+  },
+  "popular": {
+    "hero": {
+      "trending": "Trending Now"
+    },
+    "sections": {
+      "top10": "Top 10 Popular Movies",
+      "popularNow": "Popular Movies Now",
+      "more": "More Popular Movies"
+    },
+    "viewMode": {
+      "infinite": "Infinite Scroll",
+      "table": "Table View"
+    }
+  },
+  "search": {
+    "title": "Browse",
+    "searchBar": {
+      "placeholder": "Search for movie titles...",
+      "clear": "Clear input"
+    },
+    "history": {
+      "title": "Recent Searches",
+      "clearAll": "Clear All",
+      "delete": "Delete",
+      "confirmClear": "Are you sure you want to delete all search history?"
+    },
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset",
+      "genre": "Genre",
+      "all": "All",
+      "rating": "Minimum Rating",
+      "ratingOver": "{rating} or more",
+      "provider": "Watch Provider",
+      "sort": "Sort by",
+      "sortBy": {
+        "recommended": "Recommended",
+        "popularity_desc": "Popularity (High to Low)",
+        "popularity_asc": "Popularity (Low to High)",
+        "vote_average_desc": "Rating (High to Low)",
+        "vote_average_asc": "Rating (Low to High)",
+        "release_date_desc": "Release Date (Newest first)",
+        "release_date_asc": "Release Date (Oldest first)",
+        "title_asc": "Title (A-Z)"
+      }
+    },
+    "loading": "Searching for movies...",
+    "noResults": {
+      "title": "No search results",
+      "description": "Try selecting different filters."
+    }
+  },
+  "signIn": {
+    "signUpTitle": "Sign Up",
+    "signInTitle": "Sign In",
+    "signUpSubtitle": "Sign up for MOVIEFLIX and enjoy various movies",
+    "signInSubtitle": "Welcome to MOVIEFLIX",
+    "emailLabel": "Email",
+    "emailPlaceholder": "example@email.com",
+    "apiKeyLabel": "TMDB API Key",
+    "apiKeyPlaceholder": "Enter your TMDB API key",
+    "confirmApiKeyLabel": "Confirm TMDB API Key",
+    "confirmApiKeyPlaceholder": "Enter your API key again",
+    "rememberMe": "Keep me logged in",
+    "agreeTerms": "I agree to the Terms of Service and Privacy Policy (Required)",
+    "signUpButton": "Sign Up",
+    "signInButton": "Sign In",
+    "toggleToSignIn": "Already have an account?",
+    "toggleToSignUp": "Don't have an account?",
+    "checkDuplicate": "Check",
+    "checkDuplicateSuccess": "Checked",
+    "validateApi": "Validate",
+    "validateApiSuccess": "Validated",
+    "errors": {
+      "emailRequired": "Please enter your email.",
+      "invalidEmail": "Please enter a valid email format.",
+      "emailExists": "This email already exists.",
+      "apiKeyRequired": "Please enter your TMDB API key.",
+      "apiKeyMinLength": "The TMDB API key must be at least 20 characters long.",
+      "confirmApiKeyRequired": "Please confirm your API key.",
+      "apiKeyMismatch": "The API keys do not match.",
+      "invalidApiKey": "Invalid TMDB API key.",
+      "apiKeyCheckError": "An error occurred while validating the API key.",
+      "emailCheckFailed": "Duplicate check failed",
+      "emailCheckSuccess": "Duplicate check successful",
+      "emailAvailable": "This email is available.",
+      "apiValidationFailed": "API key validation failed",
+      "apiValidationSuccess": "API key validation successful",
+      "validApiKey": "This is a valid TMDB API key.",
+      "apiValidationError": "Validation Error",
+      "loginFailed": "Login failed",
+      "signUpFailed": "Sign up failed",
+      "agreeTermsRequired": "Please agree to the terms.",
+      "emailNotChecked": "Please check for email duplication.",
+      "apiKeyNotValidated": "Please validate your API key."
+    },
+    "success": {
+      "loginSuccess": "Login successful",
+      "welcome": "Welcome!",
+      "signUpSuccess": "Sign up successful",
+      "redirectingToSignIn": "Redirecting to the login page."
+    }
+  },
+  "footer": {
+    "rights": "© {year} MovieFlix. All rights reserved.",
+    "attribution": "This product uses the TMDB API but is not endorsed or certified by TMDB."
+  },
+  "movieDetail": {
+    "close": "Close",
+    "votes": "{count} votes",
+    "addToWishlist": "Add to Wishlist",
+    "removeFromWishlist": "Remove from Wishlist",
+    "overview": "Overview",
+    "noOverview": "No overview available.",
+    "trailersAndVideos": "Trailers & Videos",
+    "providers": "Available on",
+    "streaming": "Streaming",
+    "rent": "Rent",
+    "buy": "Buy",
+    "moreInfo": "More Information",
+    "genres": "Genres",
+    "cast": "Cast",
+    "details": "Details",
+    "director": "Director:",
+    "releaseDate": "Release Date:",
+    "runtime": "Runtime:",
+    "originalTitle": "Original Title:",
+    "language": "Language:",
+    "budget": "Budget:",
+    "revenue": "Revenue:",
+    "rating": "Rating:",
+    "voteCount": "Vote Count:",
+    "runtimeFormat": {
+      "hoursMinutes": "{hours}h {minutes}m",
+      "minutes": "{minutes}m"
+    }
+  },
+  "infiniteScroll": {
+    "loadMore": "Scroll down to see more movies"
+  },
+  "tableView": {
+    "prev": "Prev",
+    "next": "Next",
+    "page": "Page {currentPage} / {totalPages}"
+  },
+  "loading": "Loading...",
+  "movieCard": {
+    "wishlistAdd": "Add to wishlist",
+    "wishlistRemove": "Remove from wishlist",
+    "details": "Details",
+    "noOverview": "No description available."
+  },
+  "home": {
+    "hero": {
+      "overviewPlaceholder": "Discover the most popular movies now!",
+      "details": "Details"
+    },
+    "loading": "Loading movies...",
+    "error": {
+      "title": "An error occurred",
+      "invalidKey": "The API key is invalid. Please log out and log in again with a valid TMDB API key."
+    },
+    "sections": {
+      "dailyTrend": "Daily Trending Movies",
+      "popularTv": "Popular TV Shows",
+      "nowPlaying": "Now Playing",
+      "upcoming": "Upcoming",
+      "topRated": "Top Rated",
+      "koreanPopularMovies": "Korean Popular Movies",
+      "koreanPopularTv": "Korean Popular TV Shows",
+      "action": "Recommended Action Movies",
+      "comedy": "Recommended Comedy Movies",
+      "romance": "Recommended Romance Movies",
+      "sf": "Recommended Sci-Fi Movies",
+      "horror": "Recommended Horror Movies",
+      "animation": "Recommended Animations",
+      "documentary": "Recommended Documentaries"
+    }
+  }
+}

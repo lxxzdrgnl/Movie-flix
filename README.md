@@ -2,18 +2,18 @@
 
 Netflix와 유사한 프론트엔드 데모 사이트입니다. Vue.js 3, TypeScript, TMDB API를 활용하여 제작되었습니다.
 
-## 🌐 Live Demo
+## Live Demo
 
 **배포 URL**: [https://lxxzdrgnl.github.io/PB_assignment_2/](https://lxxzdrgnl.github.io/PB_assignment_2/)
 
-## 📋 프로젝트 개요
+## 프로젝트 개요
 
 - **프로젝트명**: MovieFlix
 - **설명**: TMDB API를 활용한 영화 정보 제공 및 찜하기 기능이 있는 SPA
 - **기술 스택**: Vue.js 3, TypeScript, Pinia, Vue Router, Axios
 - **API**: The Movie Database (TMDB) API
 
-## 🚀 주요 기능
+## 주요 기능
 
 ### 1. 인증 시스템
 - 로그인/회원가입 페이지
@@ -40,18 +40,18 @@ Netflix와 유사한 프론트엔드 데모 사이트입니다. Vue.js 3, TypeSc
 - 무한 스크롤 (Infinity Scroll)
 - 맨 위로 버튼
 - 로딩 상태 표시
+- top 10 영화 표시
 
 ### 4. 찾아보기 페이지 (/search)
 - 장르별 필터링
 - 최소 평점 필터링
 - 다양한 정렬 옵션
-  - 인기순, 평점순, 개봉일순, 제목순
+  - 추천순, 인기순, 평점순, 개봉일순, 제목순
 - 필터 초기화 기능
 
 ### 5. 찜한 리스트 페이지 (/wishlist)
 - Local Storage 기반 찜하기 목록
-- API 호출 없이 구현
-- 빈 상태 UI
+- 찜하기 목록을 기반으로 간단한 통계 / 추천영화
 
 ### 6. 공통 기능
 - 반응형 헤더 (스크롤 시 배경색 변경)
@@ -60,7 +60,7 @@ Netflix와 유사한 프론트엔드 데모 사이트입니다. Vue.js 3, TypeSc
 - 로딩 스피너
 - 반응형 웹 디자인
 
-## 🛠️ 기술 스택
+## 기술 스택
 
 ### Frontend
 - **Vue.js 3**: Composition API 사용
@@ -78,74 +78,79 @@ Netflix와 유사한 프론트엔드 데모 사이트입니다. Vue.js 3, TypeSc
 - **Vite**: 빌드 도구
 - **Node.js**: v20.19.0 이상
 
-## 📁 프로젝트 구조
+## 프로젝트 구조
 
 ```
-PB_Assignment2/
+PB_assignment_2/
 ├── public/
+│   └── favicon.ico                # 파비콘
 ├── src/
 │   ├── assets/
 │   │   └── styles/
-│   │       └── main.css           # 전역 스타일
+│   │       └── main.css           # 전역 스타일 (CSS Variables, 반응형)
 │   ├── components/
-│   │   ├── AppHeader.vue          # 헤더 컴포넌트
-│   │   ├── MovieCard.vue          # 영화 카드 컴포넌트
-│   │   ├── LoadingSpinner.vue     # 로딩 컴포넌트
-│   │   └── ToastNotification.vue  # Toast 알림 컴포넌트
+│   │   ├── AppFooter.vue          # 푸터 컴포넌트
+│   │   ├── AppHeader.vue          # 헤더 컴포넌트 (스크롤 효과)
+│   │   ├── InfiniteScrollView.vue # 무한 스크롤 뷰
+│   │   ├── LargeMovieCard.vue     # 영화 카드 컴포넌트
+│   │   ├── LoadingSpinner.vue     # 로딩 스피너
+│   │   ├── MovieCardSkeleton.vue  # 스켈레톤 UI
+│   │   ├── MovieDetailModal.vue   # 영화 상세 모달
+│   │   ├── MovieSlider.vue        # 영화 슬라이더 컴포넌트
+│   │   ├── SearchBar.vue          # 검색 바 컴포넌트
+│   │   ├── TableView.vue          # 테이블 뷰
+│   │   └── ToastNotification.vue  # Toast 알림
 │   ├── composables/
-│   │   └── useWishlist.ts         # Wishlist 관리 composable
+│   │   ├── index.ts               # Composables 통합 export
+│   │   ├── useApiCache.ts         # API 캐싱 로직
+│   │   ├── useRecommendations.ts  # 추천 시스템 로직
+│   │   ├── useSearchHistory.ts    # 검색 히스토리 관리
+│   │   ├── useTheme.ts            # 테마 관리
+│   │   ├── useUserPreferences.ts  # 사용자 선호도 관리
+│   │   ├── useWatchHistory.ts     # 시청 기록 관리
+│   │   └── useWishlist.ts         # 찜하기 관리
 │   ├── router/
-│   │   └── index.ts               # 라우터 설정
+│   │   └── index.ts               # Vue Router 설정 (라우트 가드 포함)
 │   ├── stores/
-│   │   ├── auth.ts                # 인증 상태 관리
+│   │   ├── auth.ts                # 인증 상태 관리 (Pinia)
 │   │   └── counter.ts             # 카운터 스토어 (기본)
 │   ├── types/
-│   │   └── movie.ts               # 타입 정의
+│   │   └── movie.ts               # TypeScript 타입 정의
 │   ├── utils/
 │   │   ├── auth.ts                # 인증 유틸리티
-│   │   └── tmdb.ts                # TMDB API 유틸리티
+│   │   ├── localStorage.ts        # LocalStorage 헬퍼
+│   │   └── tmdb.ts                # TMDB API 클라이언트
 │   ├── views/
-│   │   ├── SignInView.vue         # 로그인/회원가입 페이지
 │   │   ├── HomeView.vue           # 홈 페이지
 │   │   ├── PopularView.vue        # 대세 콘텐츠 페이지
 │   │   ├── SearchView.vue         # 찾아보기 페이지
+│   │   ├── SignInView.vue         # 로그인/회원가입 페이지
 │   │   └── WishlistView.vue       # 찜한 리스트 페이지
 │   ├── App.vue                    # 루트 컴포넌트
 │   └── main.ts                    # 앱 진입점
-├── index.html
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── README.md
-└── claude.md                      # 개발 참고 문서
+├── .gitignore
+├── env.d.ts                       # TypeScript 환경 타입 정의
+├── index.html                     # HTML 진입점
+├── package.json                   # 프로젝트 의존성
+├── package-lock.json
+├── tsconfig.json                  # TypeScript 설정
+├── tsconfig.app.json
+├── tsconfig.node.json
+├── vite.config.ts                 # Vite 빌드 설정
+└── README.md                      # 프로젝트 문서
 ```
 
-## 🔧 설치 및 실행
+## 설치 및 실행
 
 ### 필수 요구사항
 - Node.js v20.19.0 이상
 - npm 또는 yarn
-- TMDB API 키
 
 ### 설치
 
 ```bash
 # 의존성 설치
 npm install
-
-# .env 파일 생성 (중요!)
-# .env.example 파일을 복사하여 .env 파일을 생성하고
-# TMDB API 키를 입력하세요
-cp .env.example .env
-```
-
-### 환경 변수 설정
-
-`.env` 파일을 열고 다음 내용을 입력하세요:
-
-```
-VITE_TMDB_API_KEY=your_api_key_here
-VITE_TMDB_ACCESS_TOKEN=your_access_token_here
 ```
 
 ### 개발 서버 실행
@@ -172,7 +177,7 @@ npm run preview
 npm run type-check
 ```
 
-## 💾 Local Storage 사용
+## Local Storage 사용
 
 이 프로젝트는 다음 데이터를 Local Storage에 저장합니다:
 
@@ -182,16 +187,7 @@ npm run type-check
 4. **keepLogin**: 로그인 유지 여부
 5. **movieWishlist**: 찜한 영화 목록
 
-## 🔐 환경 변수
-
-프로젝트 루트의 `.env` 파일에서 관리됩니다:
-
-1. **VITE_TMDB_API_KEY**: TMDB API 키
-2. **VITE_TMDB_ACCESS_TOKEN**: TMDB 읽기 액세스 토큰
-
-**주의**: `.env` 파일은 `.gitignore`에 포함되어 있어 Git에 커밋되지 않습니다.
-
-## 🎨 주요 CSS 클래스
+## 주요 CSS 클래스
 
 ### 버튼
 - `.btn`: 기본 버튼
@@ -216,14 +212,14 @@ npm run type-check
 - `.loading-spinner`: 로딩 스피너
 - `.toast`: Toast 알림
 
-## 🌐 반응형 브레이크포인트
+## 반응형 브레이크포인트
 
 - **Desktop**: 1025px 이상
 - **Tablet**: 769px ~ 1024px
 - **Mobile**: 768px 이하
 - **Small Mobile**: 480px 이하
 
-## 🎯 구현 특징
+## 구현 특징
 
 ### Vue.js 특징
 - Composition API 사용
@@ -246,10 +242,130 @@ npm run type-check
 - Local Storage 캐싱
 - Debounce/Throttle (필요 시)
 
-## 📝 브랜치 전략
+## Git 커밋 메시지 규칙
 
-이 프로젝트는 Git Flow 전략을 사용합니다:
+이 프로젝트는 다음과 같은 커밋 메시지 컨벤션을 따릅니다:
 
-- **main**: 프로덕션 브랜치
-- **develop**: 개발 브랜치
-- **feature/\***: 기능 개발 브랜치
+### 커밋 메시지 형식
+
+```
+<타입>: <제목>
+```
+
+### 타입 (Type)
+
+- **FEAT**: 새로운 기능 추가
+  - 예: `FEAT: Add user authentication`
+  - 예: `FEAT: Implement infinite scroll`
+
+- **ADD**: 파일, 컴포넌트, 리소스 추가
+  - 예: `ADD: MovieDetailModal component`
+  - 예: `ADD: useTheme composable`
+
+- **FIX**: 버그 수정
+  - 예: `FIX: Resolve login form validation issue`
+  - 예: `FIX: Correct movie card aspect ratio`
+
+- **REFACTOR**: 코드 리팩토링 (기능 변경 없음)
+  - 예: `REFACTOR: Simplify auth logic`
+  - 예: `REFACTOR: Extract common utilities`
+
+- **STYLE**: 코드 스타일 변경 (포매팅, 세미콜론 등)
+  - 예: `STYLE: Format CSS with prettier`
+  - 예: `STYLE: Fix indentation`
+
+- **DOCS**: 문서 수정
+  - 예: `DOCS: Update README installation guide`
+  - 예: `DOCS: Add API documentation`
+
+- **CHORE**: 빌드, 설정 파일 수정
+  - 예: `CHORE: Update vite config`
+  - 예: `CHORE: Add ESLint rules`
+
+### 작성 규칙
+
+- 50자 이내, 마침표 없이, 명령문으로 작성 (동사 원형), 첫 글자는 대문자
+
+### 커밋 예시
+
+```bash
+# 간단한 커밋
+git commit -m "FEAT: Add dark mode toggle"
+
+
+## 브랜치 전략
+
+이 프로젝트는 **Git Flow** 전략을 사용합니다:
+
+### 브랜치 종류
+
+#### 1. `main` (프로덕션 브랜치)
+- 배포 가능한 안정적인 코드만 존재
+- 직접 커밋 금지
+- `dev` 브랜치에서 Pull Request로만 병합 가능
+
+#### 2. `dev` (개발 브랜치)
+- 다음 릴리스를 위한 개발 진행
+- `feature` 브랜치들이 Git Merge로 병합되는 곳
+- 기능 개발이 완료되면 `main`으로 PR 생성
+
+#### 3. `feature/*` (기능 개발 브랜치)
+- 새로운 기능 개발용
+- `dev` 브랜치에서 분기
+- 개발 완료 후 `dev`로 Git Merge로 병합
+- 브랜치명 규칙: `feature/기능명`
+  - 예: `feature/login`, `feature/movie-detail-modal`
+
+### 워크플로우
+
+```bash
+# 1. dev 브랜치에서 feature 브랜치 생성
+git checkout dev
+git pull origin dev
+git checkout -b feature/movie-slider
+
+# 2. 기능 개발 및 커밋
+git add .
+git commit -m "FEAT: Add movie slider component"
+
+# 3. dev 브랜치로 병합 (Git Merge)
+git checkout dev
+git merge feature/movie-slider
+git push origin dev
+
+# 4. 로컬 브랜치 삭제
+git branch -d feature/movie-slider
+
+# 5. 배포 준비 완료 시 (dev → main) - Pull Request 사용
+# GitHub에서 PR 생성 (dev → main)
+# 코드 리뷰 후 병합
+# 병합 후 태그 생성
+git checkout main
+git pull origin main
+git tag -a v1.0.0 -m "Release version 1.0.0"
+git push origin main --tags
+```
+
+### 브랜치 네이밍 규칙
+
+- **feature/** : 기능 개발
+  - `feature/infinite-scroll`
+  - `feature/dark-mode`
+
+- **fix/** : 버그 수정 (긴급하지 않은 경우)
+  - `fix/search-filter`
+  - `fix/modal-scroll`
+
+- **hotfix/** : 긴급 버그 수정 (main에서 직접 분기)
+  - `hotfix/critical-auth-bug`
+
+### 병합 정책
+
+- **Git Merge**: feature → dev
+  - 로컬에서 `git merge` 명령어로 병합
+  - 커밋 히스토리 유지
+
+- **Pull Request**: dev → main
+  - GitHub에서 PR 생성
+  - 코드 리뷰 필수
+  - 릴리스 단위를 명확히 구분
