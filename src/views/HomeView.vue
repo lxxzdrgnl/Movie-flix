@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
@@ -17,6 +18,8 @@ import {
   discoverTvShows
 } from '@/utils/tmdb'
 import { getBackdropUrl } from '@/utils/tmdb'
+
+const { t, locale } = useI18n()
 
 const dailyTrendingMovies = ref<Movie[]>([])
 const popularTvShows = ref<Movie[]>([])
@@ -126,7 +129,7 @@ const loadMovies = async () => {
 
     startHeroRotation()
   } catch (err) {
-    error.value = 'API 키가 유효하지 않습니다. 로그아웃 후 올바른 TMDB API 키로 다시 로그인해주세요.'
+    error.value = t('home.error.invalidKey')
     console.error('영화 데이터 로드 실패:', err)
   } finally {
     loading.value = false
@@ -144,6 +147,10 @@ const handleCloseModal = () => {
     selectedMovie.value = null
   }, 300)
 }
+
+watch(locale, () => {
+  loadMovies()
+})
 
 onMounted(() => {
   loadMovies()
@@ -179,11 +186,11 @@ onUnmounted(() => {
             </span>
           </div>
           <p class="hero-banner-description">
-            {{ heroMovie.overview || '지금 가장 인기 있는 영화를 만나보세요!' }}
+            {{ heroMovie.overview || t('home.hero.overviewPlaceholder') }}
           </p>
           <div class="hero-banner-actions">
             <button class="btn btn-primary" @click="handleMovieClick(heroMovie)">
-              <i class="fas fa-play"></i> 상세보기
+              <i class="fas fa-play"></i> {{ t('home.hero.details') }}
             </button>
           </div>
         </div>
@@ -192,18 +199,18 @@ onUnmounted(() => {
 
     <main class="page-container">
       <div class="container">
-        <LoadingSpinner v-if="loading" text="영화 목록을 불러오는 중..." />
+        <LoadingSpinner v-if="loading" :text="t('home.loading')" />
 
         <div v-else-if="error" class="empty-state">
           <i class="fas fa-exclamation-triangle empty-state-icon"></i>
-          <h2 class="empty-state-title">오류가 발생했습니다</h2>
+          <h2 class="empty-state-title">{{ t('home.error.title') }}</h2>
           <p class="empty-state-description">{{ error }}</p>
         </div>
 
         <div v-else>
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">일간 트렌드 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.dailyTrend') }}</h2>
             </div>
             <MovieSlider :movies="dailyTrendingMovies">
               <template #default="{ movie }">
@@ -214,7 +221,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">인기 TV 프로그램</h2>
+              <h2 class="section-title">{{ t('home.sections.popularTv') }}</h2>
             </div>
             <MovieSlider :movies="popularTvShows">
               <template #default="{ movie }">
@@ -225,7 +232,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">현재 상영작</h2>
+              <h2 class="section-title">{{ t('home.sections.nowPlaying') }}</h2>
             </div>
             <MovieSlider :movies="nowPlayingMovies">
               <template #default="{ movie }">
@@ -236,7 +243,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">개봉 예정</h2>
+              <h2 class="section-title">{{ t('home.sections.upcoming') }}</h2>
             </div>
             <MovieSlider :movies="upcomingMovies">
               <template #default="{ movie }">
@@ -247,7 +254,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">높은 평점</h2>
+              <h2 class="section-title">{{ t('home.sections.topRated') }}</h2>
             </div>
             <MovieSlider :movies="topRatedMovies">
               <template #default="{ movie }">
@@ -258,7 +265,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">한국 인기 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.koreanPopularMovies') }}</h2>
             </div>
             <MovieSlider :movies="koreanMovies">
               <template #default="{ movie }">
@@ -269,7 +276,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">한국 인기 TV 프로그램</h2>
+              <h2 class="section-title">{{ t('home.sections.koreanPopularTv') }}</h2>
             </div>
             <MovieSlider :movies="koreanTvShows">
               <template #default="{ movie }">
@@ -280,7 +287,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 액션 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.action') }}</h2>
             </div>
             <MovieSlider :movies="actionMovies">
               <template #default="{ movie }">
@@ -291,7 +298,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 코미디 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.comedy') }}</h2>
             </div>
             <MovieSlider :movies="comedyMovies">
               <template #default="{ movie }">
@@ -302,7 +309,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 로맨스 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.romance') }}</h2>
             </div>
             <MovieSlider :movies="romanceMovies">
               <template #default="{ movie }">
@@ -313,7 +320,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 SF 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.sf') }}</h2>
             </div>
             <MovieSlider :movies="sciFiMovies">
               <template #default="{ movie }">
@@ -324,7 +331,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 공포 영화</h2>
+              <h2 class="section-title">{{ t('home.sections.horror') }}</h2>
             </div>
             <MovieSlider :movies="horrorMovies">
               <template #default="{ movie }">
@@ -335,7 +342,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 애니메이션</h2>
+              <h2 class="section-title">{{ t('home.sections.animation') }}</h2>
             </div>
             <MovieSlider :movies="animationMovies">
               <template #default="{ movie }">
@@ -346,7 +353,7 @@ onUnmounted(() => {
 
           <section class="section">
             <div class="section-header">
-              <h2 class="section-title">추천 다큐멘터리</h2>
+              <h2 class="section-title">{{ t('home.sections.documentary') }}</h2>
             </div>
             <MovieSlider :movies="documentaryMovies">
               <template #default="{ movie }">

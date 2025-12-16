@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useTheme } from '@/composables/useTheme'
 import { tryLogin, tryRegister, isValidEmail, setKeepLogin } from '@/utils/auth'
 import { storage, STORAGE_KEYS } from '@/utils/localStorage'
 import type { User } from '@/types/movie'
 import ToastNotification from '@/components/ToastNotification.vue'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const authStore = useAuthStore()
+const { currentTheme, toggleTheme } = useTheme()
 const toastRef = ref<InstanceType<typeof ToastNotification> | null>(null)
+
+const isDark = computed(() => currentTheme.value === 'dark')
+const showLanguageMenu = ref(false)
 
 const isSignUp = ref(false)
 const email = ref('')
@@ -24,17 +31,27 @@ const isLoading = ref(false)
 const isEmailChecked = ref(false)
 const isApiKeyValidated = ref(false)
 
+const changeLanguage = (newLocale: string) => {
+  locale.value = newLocale
+  localStorage.setItem('locale', newLocale)
+  showLanguageMenu.value = false
+}
+
+const toggleLanguageMenu = () => {
+  showLanguageMenu.value = !showLanguageMenu.value
+}
+
 const showToast = (type: 'success' | 'error', title: string, message: string) => {
   toastRef.value?.addToast(type, title, message)
 }
 
 const validateEmail = () => {
   if (!email.value) {
-    emailError.value = '이메일을 입력해주세요.'
+    emailError.value = t('signIn.errors.emailRequired')
     return false
   }
   if (!isValidEmail(email.value)) {
-    emailError.value = '올바른 이메일 형식이 아닙니다.'
+    emailError.value = t('signIn.errors.invalidEmail')
     return false
   }
   emailError.value = ''
@@ -43,11 +60,11 @@ const validateEmail = () => {
 
 const validateApiKey = () => {
   if (!apiKey.value) {
-    apiKeyError.value = 'TMDB API 키를 입력해주세요.'
+    apiKeyError.value = t('signIn.errors.apiKeyRequired')
     return false
   }
   if (apiKey.value.length < 20) {
-    apiKeyError.value = 'TMDB API 키는 최소 20자 이상이어야 합니다.'
+    apiKeyError.value = t('signIn.errors.apiKeyMinLength')
     return false
   }
   apiKeyError.value = ''
@@ -57,11 +74,11 @@ const validateApiKey = () => {
 const validateConfirmApiKey = () => {
   if (isSignUp.value) {
     if (!confirmApiKey.value) {
-      confirmApiKeyError.value = 'API 키 확인을 입력해주세요.'
+      confirmApiKeyError.value = t('signIn.errors.confirmApiKeyRequired')
       return false
     }
     if (apiKey.value !== confirmApiKey.value) {
-      confirmApiKeyError.value = 'API 키가 일치하지 않습니다.'
+      confirmApiKeyError.value = t('signIn.errors.apiKeyMismatch')
       return false
     }
   }
@@ -83,12 +100,20 @@ const checkEmailDuplicate = () => {
 
   setTimeout(() => {
     if (userExists) {
-      emailError.value = '이미 존재하는 이메일입니다.'
+      emailError.value = t('signIn.errors.emailExists')
       isEmailChecked.value = false
-      showToast('error', '중복 확인 실패', '이미 사용 중인 이메일입니다.')
+      showToast(
+        'error',
+        t('signIn.errors.emailCheckFailed'),
+        t('signIn.errors.emailExists')
+      )
     } else {
       isEmailChecked.value = true
-      showToast('success', '중복 확인 성공', '사용 가능한 이메일입니다.')
+      showToast(
+        'success',
+        t('signIn.errors.emailCheckSuccess'),
+        t('signIn.errors.emailAvailable')
+      )
     }
     isLoading.value = false
   }, 500)
@@ -107,16 +132,20 @@ const validateApiKeyOnServer = async () => {
 
     if (isValid) {
       isApiKeyValidated.value = true
-      showToast('success', 'API 키 검증 성공', '유효한 TMDB API 키입니다.')
+      showToast(
+        'success',
+        t('signIn.errors.apiValidationSuccess'),
+        t('signIn.errors.validApiKey')
+      )
     } else {
       isApiKeyValidated.value = false
-      apiKeyError.value = '유효하지 않은 TMDB API 키입니다.'
-      showToast('error', 'API 키 검증 실패', '유효하지 않은 API 키입니다.')
+      apiKeyError.value = t('signIn.errors.invalidApiKey')
+      showToast('error', t('signIn.errors.apiValidationFailed'), t('signIn.errors.invalidApiKey'))
     }
   } catch (error) {
     isApiKeyValidated.value = false
-    apiKeyError.value = 'API 키 검증 중 오류가 발생했습니다.'
-    showToast('error', '검증 오류', 'API 키 검증 중 오류가 발생했습니다.')
+    apiKeyError.value = t('signIn.errors.apiKeyCheckError')
+    showToast('error', t('signIn.errors.apiValidationError'), t('signIn.errors.apiKeyCheckError'))
   } finally {
     isLoading.value = false
   }
@@ -136,13 +165,13 @@ const handleLogin = async () => {
       if (rememberMe.value) {
         setKeepLogin(true)
       }
-      showToast('success', '로그인 성공', '환영합니다!')
+      showToast('success', t('signIn.success.loginSuccess'), t('signIn.success.welcome'))
       setTimeout(() => {
         router.push('/')
       }, 1000)
     },
     (message) => {
-      showToast('error', '로그인 실패', message)
+      showToast('error', t('signIn.errors.loginFailed'), message)
     }
   )
   isLoading.value = false
@@ -154,17 +183,17 @@ const handleSignUp = async () => {
   }
 
   if (!isEmailChecked.value) {
-    showToast('error', '회원가입 실패', '이메일 중복 확인을 해주세요.')
+    showToast('error', t('signIn.errors.signUpFailed'), t('signIn.errors.emailNotChecked'))
     return
   }
 
   if (!isApiKeyValidated.value) {
-    showToast('error', '회원가입 실패', 'API 키 유효성 검증을 해주세요.')
+    showToast('error', t('signIn.errors.signUpFailed'), t('signIn.errors.apiKeyNotValidated'))
     return
   }
 
   if (!agreeTerms.value) {
-    showToast('error', '회원가입 실패', '약관에 동의해주세요.')
+    showToast('error', t('signIn.errors.signUpFailed'), t('signIn.errors.agreeTermsRequired'))
     return
   }
 
@@ -173,7 +202,11 @@ const handleSignUp = async () => {
     email.value,
     apiKey.value,
     () => {
-      showToast('success', '회원가입 성공', '로그인 페이지로 이동합니다.')
+      showToast(
+        'success',
+        t('signIn.success.signUpSuccess'),
+        t('signIn.success.redirectingToSignIn')
+      )
       setTimeout(() => {
         isSignUp.value = false
         confirmApiKey.value = ''
@@ -183,7 +216,7 @@ const handleSignUp = async () => {
       }, 1000)
     },
     (message) => {
-      showToast('error', '회원가입 실패', message)
+      showToast('error', t('signIn.errors.signUpFailed'), message)
     }
   )
   isLoading.value = false
@@ -227,16 +260,20 @@ watch(apiKey, () => {
   <div class="auth-page">
     <div class="auth-container">
       <div class="auth-header">
-        <h1 class="auth-title">{{ isSignUp ? '회원가입' : '로그인' }}</h1>
+        <h1 class="auth-title">{{ isSignUp ? t('signIn.signUpTitle') : t('signIn.signInTitle') }}</h1>
         <p class="auth-subtitle">
-          {{ isSignUp ? 'MOVIEFLIX에 가입하고 다양한 영화를 감상하세요' : 'MOVIEFLIX에 오신 것을 환영합니다' }}
+          {{ isSignUp ? t('signIn.signUpSubtitle') : t('signIn.signInSubtitle') }}
         </p>
       </div>
 
       <Transition name="fade" mode="out-in">
-        <form class="auth-form" @submit.prevent="handleSubmit" :key="isSignUp ? 'signup' : 'signin'">
+        <form
+          class="auth-form"
+          @submit.prevent="handleSubmit"
+          :key="isSignUp ? 'signup' : 'signin'"
+        >
           <div class="input-group">
-            <label class="input-label" for="email">이메일</label>
+            <label class="input-label" for="email">{{ t('signIn.emailLabel') }}</label>
             <div class="input-with-button">
               <input
                 id="email"
@@ -245,7 +282,7 @@ watch(apiKey, () => {
                 :class="{ 'input-error': emailError, 'input-success': isSignUp && isEmailChecked }"
                 v-model="email"
                 @blur="validateEmail"
-                placeholder="example@email.com"
+                :placeholder="t('signIn.emailPlaceholder')"
                 required
               />
               <button
@@ -256,23 +293,28 @@ watch(apiKey, () => {
                 @click="checkEmailDuplicate"
                 :disabled="isLoading"
               >
-                {{ isEmailChecked ? '확인완료' : '중복확인' }}
+                {{
+                  isEmailChecked ? t('signIn.checkDuplicateSuccess') : t('signIn.checkDuplicate')
+                }}
               </button>
             </div>
             <p v-if="emailError" class="error-message">{{ emailError }}</p>
           </div>
 
           <div class="input-group">
-            <label class="input-label" for="apiKey">TMDB API 키</label>
+            <label class="input-label" for="apiKey">{{ t('signIn.apiKeyLabel') }}</label>
             <div class="input-with-button">
               <input
                 id="apiKey"
                 type="text"
                 class="input-field"
-                :class="{ 'input-error': apiKeyError, 'input-success': isSignUp && isApiKeyValidated }"
+                :class="{
+                  'input-error': apiKeyError,
+                  'input-success': isSignUp && isApiKeyValidated
+                }"
                 v-model="apiKey"
                 @blur="validateApiKey"
-                placeholder="TMDB API 키를 입력하세요"
+                :placeholder="t('signIn.apiKeyPlaceholder')"
                 required
               />
               <button
@@ -283,14 +325,16 @@ watch(apiKey, () => {
                 @click="validateApiKeyOnServer"
                 :disabled="isLoading"
               >
-                {{ isApiKeyValidated ? '검증완료' : 'API 검증' }}
+                {{ isApiKeyValidated ? t('signIn.validateApiSuccess') : t('signIn.validateApi') }}
               </button>
             </div>
             <p v-if="apiKeyError" class="error-message">{{ apiKeyError }}</p>
           </div>
 
           <div v-if="isSignUp" class="input-group">
-            <label class="input-label" for="confirmApiKey">TMDB API 키 확인</label>
+            <label class="input-label" for="confirmApiKey">{{
+              t('signIn.confirmApiKeyLabel')
+            }}</label>
             <input
               id="confirmApiKey"
               type="text"
@@ -298,7 +342,7 @@ watch(apiKey, () => {
               :class="{ 'input-error': confirmApiKeyError }"
               v-model="confirmApiKey"
               @blur="validateConfirmApiKey"
-              placeholder="API 키를 다시 입력하세요"
+              :placeholder="t('signIn.confirmApiKeyPlaceholder')"
               required
             />
             <p v-if="confirmApiKeyError" class="error-message">{{ confirmApiKeyError }}</p>
@@ -306,30 +350,63 @@ watch(apiKey, () => {
 
           <div v-if="!isSignUp" class="checkbox-group">
             <input id="rememberMe" type="checkbox" class="checkbox-input" v-model="rememberMe" />
-            <label for="rememberMe" class="checkbox-label">로그인 상태 유지</label>
+            <label for="rememberMe" class="checkbox-label">{{ t('signIn.rememberMe') }}</label>
           </div>
 
           <div v-if="isSignUp" class="checkbox-group">
             <input id="agreeTerms" type="checkbox" class="checkbox-input" v-model="agreeTerms" />
             <label for="agreeTerms" class="checkbox-label">
-              서비스 이용약관 및 개인정보 처리방침에 동의합니다 (필수)
+              {{ t('signIn.agreeTerms') }}
             </label>
           </div>
 
           <button type="submit" class="btn btn-primary w-full mt-3">
-            {{ isSignUp ? '회원가입' : '로그인' }}
+            {{ isSignUp ? t('signIn.signUpButton') : t('signIn.signInButton') }}
           </button>
         </form>
       </Transition>
 
       <div class="auth-toggle">
-        {{ isSignUp ? '이미 계정이 있으신가요?' : '계정이 없으신가요?' }}
+        {{ isSignUp ? t('signIn.toggleToSignIn') : t('signIn.toggleToSignUp') }}
         <span class="auth-toggle-btn" @click="toggleMode">
-          {{ isSignUp ? '로그인' : '회원가입' }}
+          {{ isSignUp ? t('signIn.signInButton') : t('signIn.signUpButton') }}
         </span>
       </div>
-    </div>
 
+      <div class="auth-page-controls">
+        <button
+          class="btn-icon theme-toggle"
+          @click="toggleTheme"
+          :title="t('header.toggleTheme')"
+        >
+          <i :class="isDark ? 'fas fa-moon' : 'fas fa-sun'"></i>
+        </button>
+
+        <div class="language-menu-container">
+          <button class="btn-icon" @click.stop="toggleLanguageMenu" :title="t('header.language')">
+            <i class="fas fa-globe"></i>
+          </button>
+          <Transition name="dropdown">
+            <div v-if="showLanguageMenu" class="language-dropdown">
+              <button
+                class="language-dropdown-item"
+                :class="{ active: locale === 'ko' }"
+                @click="changeLanguage('ko')"
+              >
+                한국어
+              </button>
+              <button
+                class="language-dropdown-item"
+                :class="{ active: locale === 'en' }"
+                @click="changeLanguage('en')"
+              >
+                English
+              </button>
+            </div>
+          </Transition>
+        </div>
+      </div>
+    </div>
     <ToastNotification ref="toastRef" />
   </div>
 </template>
@@ -381,5 +458,86 @@ watch(apiKey, () => {
 
 .input-success:focus {
   outline-color: #10b981;
+}
+
+.auth-page-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+}
+
+.language-menu-container {
+  position: relative;
+}
+
+.language-dropdown {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 50%;
+  transform: translateX(50%);
+  background-color: var(--bg-light);
+  border-radius: 4px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 120px;
+  padding: 0.5rem 0;
+  z-index: 1001;
+  border: 1px solid var(--border-color);
+}
+
+.language-dropdown-item {
+  width: 100%;
+  display: block;
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.language-dropdown-item:hover:not(.active) {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+
+.language-dropdown-item.active {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.language-dropdown-item.active:hover {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
 }
 </style>

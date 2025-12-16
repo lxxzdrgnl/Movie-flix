@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
@@ -7,10 +8,18 @@ import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
 import MovieDetailModal from '@/components/MovieDetailModal.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import type { Movie, Genre } from '@/types/movie'
-import { discoverMovies, getGenres, searchMovies as searchMoviesAPI, getAvailableWatchProviders, getMovieRecommendations, getSimilarMovies } from '@/utils/tmdb'
+import {
+  discoverMovies,
+  getGenres,
+  searchMovies as searchMoviesAPI,
+  getAvailableWatchProviders,
+  getMovieRecommendations,
+  getSimilarMovies
+} from '@/utils/tmdb'
 import { useSearchHistory } from '@/composables/useSearchHistory'
 import { useWishlist } from '@/composables/useWishlist'
 
+const { t, locale } = useI18n()
 const movies = ref<Movie[]>([])
 const genres = ref<Genre[]>([])
 const watchProviders = ref<any[]>([])
@@ -62,7 +71,10 @@ const loadRecommendedMovies = async () => {
 
     // 찜한 영화들 중 최대 5개만 사용 (API 호출 최소화)
     const samplesToUse = wishlist.value.slice(0, Math.min(5, wishlist.value.length))
-    console.log('사용할 찜한 영화:', samplesToUse.map(m => m.title))
+    console.log(
+      '사용할 찜한 영화:',
+      samplesToUse.map((m) => m.title)
+    )
 
     // 각 영화의 추천 영화 가져오기
     const promises = samplesToUse.map(async (movie) => {
@@ -72,7 +84,9 @@ const loadRecommendedMovies = async () => {
           getSimilarMovies(movie.id, 1)
         ])
 
-        console.log(`"${movie.title}"의 추천 영화 ${recommendations.results.length}개, 유사 영화 ${similar.results.length}개`)
+        console.log(
+          `"${movie.title}"의 추천 영화 ${recommendations.results.length}개, 유사 영화 ${similar.results.length}개`
+        )
         return [...recommendations.results, ...similar.results]
       } catch (error) {
         console.error(`영화 ${movie.id}의 추천 가져오기 실패:`, error)
@@ -95,7 +109,10 @@ const loadRecommendedMovies = async () => {
 
     recommendedMovies.value = shuffled
     console.log('총 추천 영화 개수:', recommendedMovies.value.length)
-    console.log('추천 영화 샘플:', recommendedMovies.value.slice(0, 5).map(m => m.title))
+    console.log(
+      '추천 영화 샘플:',
+      recommendedMovies.value.slice(0, 5).map((m) => m.title)
+    )
   } catch (error) {
     console.error('추천 영화 로드 실패:', error)
     recommendedMovies.value = []
@@ -173,19 +190,23 @@ const searchMovies = async (append: boolean = false) => {
         } else {
           // 추천 영화 중 검색어와 매칭되는 것 필터링
           const filteredRecommendations = recommendedMovies.value.filter((movie) => {
-            const matchesSearch = movie.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-            const matchesGenre = !selectedGenre.value || movie.genre_ids?.includes(Number(selectedGenre.value))
-            const matchesRating = !selectedRating.value || movie.vote_average >= Number(selectedRating.value)
+            const matchesSearch = movie.title
+              .toLowerCase()
+              .includes(searchQuery.value.toLowerCase())
+            const matchesGenre =
+              !selectedGenre.value || movie.genre_ids?.includes(Number(selectedGenre.value))
+            const matchesRating =
+              !selectedRating.value || movie.vote_average >= Number(selectedRating.value)
             return matchesSearch && matchesGenre && matchesRating
           })
 
           console.log('필터링된 추천 영화 개수:', filteredRecommendations.length)
 
           // 추천 영화 ID 세트
-          const recommendedIds = new Set(filteredRecommendations.map(m => m.id))
+          const recommendedIds = new Set(filteredRecommendations.map((m) => m.id))
 
           // 검색 결과에서 추천 영화 제외 (중복 방지)
-          const otherMovies = newMovies.filter(m => !recommendedIds.has(m.id))
+          const otherMovies = newMovies.filter((m) => !recommendedIds.has(m.id))
 
           // 추천 영화를 상단에, 나머지를 하단에 배치
           newMovies = [...filteredRecommendations, ...otherMovies]
@@ -219,7 +240,7 @@ const searchMovies = async (append: boolean = false) => {
     } else {
       // 검색어가 없으면 기존 discover API 사용
       const params: Record<string, string | number> = {
-        page: page,
+        page: page
       }
       // sort_by가 'recommended'가 아닌 경우에만 API에 정렬 파라미터 전송
       if (sortBy.value !== 'recommended') {
@@ -258,24 +279,28 @@ const searchMovies = async (append: boolean = false) => {
           console.log('찜한 영화가 없습니다. 인기순으로 표시합니다.')
           // resultsToDisplay는 이미 인기순으로 정렬됨
         } else if (selectedProvider.value) {
-          console.log('시청 플랫폼 필터가 적용되어 있어 추천 영화를 제외하고 discover 결과만 사용합니다.')
+          console.log(
+            '시청 플랫폼 필터가 적용되어 있어 추천 영화를 제외하고 discover 결과만 사용합니다.'
+          )
           // 시청 플랫폼 필터가 있을 때는 discover 결과만 사용 (이미 플랫폼 필터가 적용됨)
           // resultsToDisplay를 그대로 사용
         } else {
           // 추천 영화 중 필터와 매칭되는 것만 선택
           const filteredRecommendations = recommendedMovies.value.filter((movie) => {
-            const matchesGenre = !selectedGenre.value || movie.genre_ids?.includes(Number(selectedGenre.value))
-            const matchesRating = !selectedRating.value || movie.vote_average >= Number(selectedRating.value)
+            const matchesGenre =
+              !selectedGenre.value || movie.genre_ids?.includes(Number(selectedGenre.value))
+            const matchesRating =
+              !selectedRating.value || movie.vote_average >= Number(selectedRating.value)
             return matchesGenre && matchesRating
           })
 
           console.log('필터링된 추천 영화 개수:', filteredRecommendations.length)
 
           // 추천 영화 ID 세트
-          const recommendedIds = new Set(filteredRecommendations.map(m => m.id))
+          const recommendedIds = new Set(filteredRecommendations.map((m) => m.id))
 
           // Discover 결과에서 추천 영화 제외 (중복 방지)
-          const otherMovies = resultsToDisplay.filter(m => !recommendedIds.has(m.id))
+          const otherMovies = resultsToDisplay.filter((m) => !recommendedIds.has(m.id))
 
           // 최대 20개의 추천 영화만 사용
           const topRecommendations = filteredRecommendations.slice(0, 20)
@@ -284,7 +309,10 @@ const searchMovies = async (append: boolean = false) => {
           resultsToDisplay = [...topRecommendations, ...otherMovies]
 
           console.log('최종 결과 - 추천:', topRecommendations.length, '일반:', otherMovies.length)
-          console.log('상위 5개 영화:', resultsToDisplay.slice(0, 5).map(m => m.title))
+          console.log(
+            '상위 5개 영화:',
+            resultsToDisplay.slice(0, 5).map((m) => m.title)
+          )
         }
       }
 
@@ -332,7 +360,8 @@ const handleScroll = () => {
 
   if (isLoadingMore.value || !hasMorePages.value) return
 
-  const scrollBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500
+  const scrollBottom =
+    window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500
 
   if (scrollBottom) {
     searchMovies(true)
@@ -376,7 +405,7 @@ const handleDeleteHistory = (query: string) => {
 }
 
 const handleClearAllHistory = () => {
-  if (confirm('모든 검색 기록을 삭제하시겠습니까?')) {
+  if (confirm(t('search.history.confirmClear'))) {
     clearSearchHistory()
   }
 }
@@ -384,6 +413,11 @@ const handleClearAllHistory = () => {
 const handleFilterChange = () => {
   searchMovies()
 }
+
+watch(locale, () => {
+  loadGenres()
+  searchMovies()
+})
 
 onMounted(async () => {
   loadGenres()
@@ -401,11 +435,14 @@ onUnmounted(() => {
 })
 
 // 찜 목록이 변경되면 추천 영화 백그라운드에서 업데이트 (검색 결과는 새로고침 안 함)
-watch(() => wishlist.value.length, async () => {
-  await loadRecommendedMovies()
-  // searchMovies()를 호출하지 않아서 사용자가 보고 있는 결과는 유지됨
-  // 다음에 검색하거나 필터를 변경할 때 업데이트된 추천 목록이 사용됨
-})
+watch(
+  () => wishlist.value.length,
+  async () => {
+    await loadRecommendedMovies()
+    // searchMovies()를 호출하지 않아서 사용자가 보고 있는 결과는 유지됨
+    // 다음에 검색하거나 필터를 변경할 때 업데이트된 추천 목록이 사용됨
+  }
+)
 </script>
 
 <template>
@@ -415,7 +452,7 @@ watch(() => wishlist.value.length, async () => {
     <main class="page-container">
       <div class="container">
         <h1 class="section-title">
-          <i class="fas fa-search" style="color: var(--primary-color)"></i> 찾아보기
+          <i class="fas fa-search" style="color: var(--primary-color)"></i> {{ t('search.title') }}
         </h1>
 
         <!-- 검색 바 -->
@@ -428,13 +465,13 @@ watch(() => wishlist.value.length, async () => {
               @input="handleSearchInput"
               @focus="handleSearchFocus"
               @blur="handleSearchBlur"
-              placeholder="영화 제목을 검색하세요..."
+              :placeholder="t('search.searchBar.placeholder')"
             />
             <button
               v-if="searchQuery"
               class="clear-input-btn"
               @click="searchQuery = ''"
-              title="입력 지우기"
+              :title="t('search.searchBar.clear')"
             >
               <i class="fas fa-times"></i>
             </button>
@@ -449,10 +486,10 @@ watch(() => wishlist.value.length, async () => {
             >
               <div class="history-header">
                 <span class="history-title">
-                  <i class="fas fa-history"></i> 최근 검색어
+                  <i class="fas fa-history"></i> {{ t('search.history.title') }}
                 </span>
                 <button class="clear-all-btn" @click="handleClearAllHistory">
-                  전체 삭제
+                  {{ t('search.history.clearAll') }}
                 </button>
               </div>
               <ul class="history-list">
@@ -464,7 +501,7 @@ watch(() => wishlist.value.length, async () => {
                   <button
                     class="delete-history-btn"
                     @click="handleDeleteHistory(item.query)"
-                    title="삭제"
+                    :title="t('search.history.delete')"
                   >
                     <i class="fas fa-times"></i>
                   </button>
@@ -476,22 +513,22 @@ watch(() => wishlist.value.length, async () => {
 
         <div class="filter-section">
           <div class="filter-header">
-            <h3 class="filter-title">필터</h3>
+            <h3 class="filter-title">{{ t('search.filters.title') }}</h3>
             <button class="btn btn-secondary filter-reset" @click="resetFilters">
-              <i class="fas fa-redo"></i> 초기화
+              <i class="fas fa-redo"></i> {{ t('search.filters.reset') }}
             </button>
           </div>
 
           <div class="filter-grid">
             <div class="filter-group">
-              <label class="filter-label" for="genre">장르</label>
+              <label class="filter-label" for="genre">{{ t('search.filters.genre') }}</label>
               <select
                 id="genre"
                 class="filter-select"
                 v-model="selectedGenre"
                 @change="handleFilterChange"
               >
-                <option value="">전체</option>
+                <option value="">{{ t('search.filters.all') }}</option>
                 <option v-for="genre in genres" :key="genre.id" :value="genre.id">
                   {{ genre.name }}
                 </option>
@@ -499,63 +536,84 @@ watch(() => wishlist.value.length, async () => {
             </div>
 
             <div class="filter-group">
-              <label class="filter-label" for="rating">최소 평점</label>
+              <label class="filter-label" for="rating">{{ t('search.filters.rating') }}</label>
               <select
                 id="rating"
                 class="filter-select"
                 v-model="selectedRating"
                 @change="handleFilterChange"
               >
-                <option value="">전체</option>
-                <option value="9">9.0 이상</option>
-                <option value="8">8.0 이상</option>
-                <option value="7">7.0 이상</option>
-                <option value="6">6.0 이상</option>
-                <option value="5">5.0 이상</option>
+                <option value="">{{ t('search.filters.all') }}</option>
+                <option value="9">{{ t('search.filters.ratingOver', { rating: 9 }) }}</option>
+                <option value="8">{{ t('search.filters.ratingOver', { rating: 8 }) }}</option>
+                <option value="7">{{ t('search.filters.ratingOver', { rating: 7 }) }}</option>
+                <option value="6">{{ t('search.filters.ratingOver', { rating: 6 }) }}</option>
+                <option value="5">{{ t('search.filters.ratingOver', { rating: 5 }) }}</option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label class="filter-label" for="provider">시청 플랫폼</label>
+              <label class="filter-label" for="provider">{{ t('search.filters.provider') }}</label>
               <select
                 id="provider"
                 class="filter-select"
                 v-model="selectedProvider"
                 @change="handleFilterChange"
               >
-                <option value="">전체</option>
-                <option v-for="provider in watchProviders" :key="provider.provider_id" :value="provider.provider_id">
+                <option value="">{{ t('search.filters.all') }}</option>
+                <option
+                  v-for="provider in watchProviders"
+                  :key="provider.provider_id"
+                  :value="provider.provider_id"
+                >
                   {{ provider.provider_name }}
                 </option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label class="filter-label" for="sort">정렬</label>
+              <label class="filter-label" for="sort">{{ t('search.filters.sort') }}</label>
               <select id="sort" class="filter-select" v-model="sortBy" @change="handleFilterChange">
-                <option value="recommended">추천순</option>
-                <option value="popularity.desc">인기순 (높은순)</option>
-                <option value="popularity.asc">인기순 (낮은순)</option>
-                <option value="vote_average.desc">평점순 (높은순)</option>
-                <option value="vote_average.asc">평점순 (낮은순)</option>
-                <option value="release_date.desc">개봉일 (최신순)</option>
-                <option value="release_date.asc">개봉일 (오래된순)</option>
-                <option value="title.asc">제목 (가나다순)</option>
+                <option value="recommended">{{ t('search.filters.sortBy.recommended') }}</option>
+                <option value="popularity.desc">
+                  {{ t('search.filters.sortBy.popularity_desc') }}
+                </option>
+                <option value="popularity.asc">
+                  {{ t('search.filters.sortBy.popularity_asc') }}
+                </option>
+                <option value="vote_average.desc">
+                  {{ t('search.filters.sortBy.vote_average_desc') }}
+                </option>
+                <option value="vote_average.asc">
+                  {{ t('search.filters.sortBy.vote_average_asc') }}
+                </option>
+                <option value="release_date.desc">
+                  {{ t('search.filters.sortBy.release_date_desc') }}
+                </option>
+                <option value="release_date.asc">
+                  {{ t('search.filters.sortBy.release_date_asc') }}
+                </option>
+                <option value="title.asc">{{ t('search.filters.sortBy.title_asc') }}</option>
               </select>
             </div>
           </div>
         </div>
 
-        <LoadingSpinner v-if="loading" text="영화를 검색하는 중..." />
+        <LoadingSpinner v-if="loading" :text="t('search.loading')" />
 
         <div v-else-if="movies.length === 0" class="empty-state">
           <i class="fas fa-search empty-state-icon"></i>
-          <h2 class="empty-state-title">검색 결과가 없습니다</h2>
-          <p class="empty-state-description">다른 필터를 선택해보세요</p>
+          <h2 class="empty-state-title">{{ t('search.noResults.title') }}</h2>
+          <p class="empty-state-description">{{ t('search.noResults.description') }}</p>
         </div>
 
         <div v-else class="movie-grid">
-          <LargeMovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
+          <LargeMovieCard
+            v-for="movie in movies"
+            :key="movie.id"
+            :movie="movie"
+            @click="handleMovieClick"
+          />
           <MovieCardSkeleton v-if="isLoadingMore" v-for="i in 6" :key="'skeleton-' + i" />
         </div>
 

@@ -1,0 +1,264 @@
+{
+  "header": {
+    "home": "홈",
+    "popular": "인기",
+    "search": "검색",
+    "signIn": "로그인",
+    "signOut": "로그아웃",
+    "language": "언어",
+    "browse": "둘러보기",
+    "popularContent": "인기 콘텐츠",
+    "toggleTheme": "테마 변경"
+  },
+  "wishlist": {
+    "myList": "내 리스트",
+    "myWishlist": "내가 찜한 리스트",
+    "title": "내가 찜한 리스트",
+    "totalMovies": "총 {count}개의 영화",
+    "stats": {
+      "total": "찜한 영화",
+      "watchTime": "약 {hours}시간 분량",
+      "favoriteGenre": "가장 좋아하는 장르",
+      "genreCount": "{count}개 ({percentage}%)",
+      "favoriteDecade": "선호하는 시대",
+      "decadeCount": "{count}개 ({percentage}%)",
+      "movieTaste": "영화 취향",
+      "korean": "한국",
+      "global": "글로벌",
+      "koreanMovies": "한국 {korean}개 ({percentage}%) • 외국 {global}개"
+    },
+    "filters": {
+      "genre": "장르",
+      "all": "전체",
+      "sort": "정렬",
+      "sortBy": {
+        "date_added": "추가된 순서",
+        "rating_desc": "평점 높은 순",
+        "rating_asc": "평점 낮은 순",
+        "title_asc": "제목 가나다순",
+        "release_date_desc": "최신 개봉순",
+        "release_date_asc": "오래된 개봉순"
+      },
+      "results": "{count}개의 영화",
+      "filteredBy": "• {genre} 필터 적용됨"
+    },
+    "recommendations": {
+      "title": "내 취향 저격 영화",
+      "subtitle": "찜한 영화를 바탕으로 추천해드려요",
+      "loading": "추천 영화를 찾고 있습니다..."
+    },
+    "empty": {
+      "title": "찜한 영화가 없습니다",
+      "description": "마음에 드는 영화를 찜해보세요!\n영화 카드의 하트 아이콘을 클릭하면 이 목록에 추가됩니다.",
+      "browse": "영화 둘러보기"
+    },
+    "decades": {
+      "2020s": "2020년대",
+      "2010s": "2010년대",
+      "2000s": "2000년대",
+      "1990s": "1990년대",
+      "classic": "클래식"
+    },
+    "genres": {
+      "Action": "액션",
+      "Adventure": "모험",
+      "Animation": "애니메이션",
+      "Comedy": "코미디",
+      "Crime": "범죄",
+      "Documentary": "다큐멘터리",
+      "Drama": "드라마",
+      "Family": "가족",
+      "Fantasy": "판타지",
+      "History": "역사",
+      "Horror": "공포",
+      "Music": "음악",
+      "Mystery": "미스터리",
+      "Romance": "로맨스",
+      "Science Fiction": "SF",
+      "TV Movie": "TV 영화",
+      "Thriller": "스릴러",
+      "War": "전쟁",
+      "Western": "서부",
+      "Other": "기타"
+    }
+  },
+  "popular": {
+    "hero": {
+      "trending": "인기 급상승"
+    },
+    "sections": {
+      "top10": "Top 10 인기 영화",
+      "popularNow": "지금 인기 있는 영화",
+      "more": "더 많은 인기 영화"
+    },
+    "viewMode": {
+      "infinite": "무한 스크롤",
+      "table": "테이블 뷰"
+    }
+  },
+  "search": {
+    "title": "찾아보기",
+    "searchBar": {
+      "placeholder": "영화 제목을 검색하세요...",
+      "clear": "입력 지우기"
+    },
+    "history": {
+      "title": "최근 검색어",
+      "clearAll": "전체 삭제",
+      "delete": "삭제",
+      "confirmClear": "모든 검색 기록을 삭제하시겠습니까?"
+    },
+    "filters": {
+      "title": "필터",
+      "reset": "초기화",
+      "genre": "장르",
+      "all": "전체",
+      "rating": "최소 평점",
+      "ratingOver": "{rating} 이상",
+      "provider": "시청 플랫폼",
+      "sort": "정렬",
+      "sortBy": {
+        "recommended": "추천순",
+        "popularity_desc": "인기순 (높은순)",
+        "popularity_asc": "인기순 (낮은순)",
+        "vote_average_desc": "평점순 (높은순)",
+        "vote_average_asc": "평점순 (낮은순)",
+        "release_date_desc": "개봉일 (최신순)",
+        "release_date_asc": "개봉일 (오래된순)",
+        "title_asc": "제목 (가나다순)"
+      }
+    },
+    "loading": "영화를 검색하는 중...",
+    "noResults": {
+      "title": "검색 결과가 없습니다",
+      "description": "다른 필터를 선택해보세요"
+    }
+  },
+  "signIn": {
+    "signUpTitle": "회원가입",
+    "signInTitle": "로그인",
+    "signUpSubtitle": "MOVIEFLIX에 가입하고 다양한 영화를 감상하세요",
+    "signInSubtitle": "MOVIEFLIX에 오신 것을 환영합니다",
+    "emailLabel": "이메일",
+    "emailPlaceholder": "example{'@'}email.com",
+    "apiKeyLabel": "TMDB API 키",
+    "apiKeyPlaceholder": "TMDB API 키를 입력하세요",
+    "confirmApiKeyLabel": "TMDB API 키 확인",
+    "confirmApiKeyPlaceholder": "API 키를 다시 입력하세요",
+    "rememberMe": "로그인 상태 유지",
+    "agreeTerms": "서비스 이용약관 및 개인정보 처리방침에 동의합니다 (필수)",
+    "signUpButton": "회원가입",
+    "signInButton": "로그인",
+    "toggleToSignIn": "이미 계정이 있으신가요?",
+    "toggleToSignUp": "계정이 없으신가요?",
+    "checkDuplicate": "중복확인",
+    "checkDuplicateSuccess": "확인완료",
+    "validateApi": "API 검증",
+    "validateApiSuccess": "검증완료",
+    "errors": {
+      "emailRequired": "이메일을 입력해주세요.",
+      "invalidEmail": "올바른 이메일 형식이 아닙니다.",
+      "emailExists": "이미 존재하는 이메일입니다.",
+      "apiKeyRequired": "TMDB API 키를 입력해주세요.",
+      "apiKeyMinLength": "TMDB API 키는 최소 20자 이상이어야 합니다.",
+      "confirmApiKeyRequired": "API 키 확인을 입력해주세요.",
+      "apiKeyMismatch": "API 키가 일치하지 않습니다.",
+      "invalidApiKey": "유효하지 않은 TMDB API 키입니다.",
+      "apiKeyCheckError": "API 키 검증 중 오류가 발생했습니다.",
+      "emailCheckFailed": "중복 확인 실패",
+      "emailCheckSuccess": "중복 확인 성공",
+      "emailAvailable": "사용 가능한 이메일입니다.",
+      "apiValidationFailed": "API 키 검증 실패",
+      "apiValidationSuccess": "API 키 검증 성공",
+      "validApiKey": "유효한 TMDB API 키입니다.",
+      "apiValidationError": "검증 오류",
+      "loginFailed": "로그인 실패",
+      "signUpFailed": "회원가입 실패",
+      "agreeTermsRequired": "약관에 동의해주세요.",
+      "emailNotChecked": "이메일 중복 확인을 해주세요.",
+      "apiKeyNotValidated": "API 키 유효성 검증을 해주세요."
+    },
+    "success": {
+      "loginSuccess": "로그인 성공",
+      "welcome": "환영합니다!",
+      "signUpSuccess": "회원가입 성공",
+      "redirectingToSignIn": "로그인 페이지로 이동합니다."
+    }
+  },
+  "footer": {
+    "rights": "© {year} MovieFlix. 모든 권리 보유.",
+    "attribution": "이 제품은 TMDB API를 사용하지만 TMDB에서 보증하거나 인증하지 않았습니다."
+  },
+  "movieDetail": {
+    "close": "닫기",
+    "votes": "{count} 투표",
+    "addToWishlist": "내가 찜한 콘텐츠",
+    "removeFromWishlist": "찜 취소",
+    "overview": "줄거리",
+    "noOverview": "줄거리 정보가 없습니다.",
+    "trailersAndVideos": "예고편 & 영상",
+    "providers": "시청 가능 플랫폼",
+    "streaming": "스트리밍",
+    "rent": "대여",
+    "buy": "구매",
+    "moreInfo": "자세한 정보 보기",
+    "genres": "장르",
+    "cast": "출연진",
+    "details": "상세 정보",
+    "director": "감독:",
+    "releaseDate": "개봉일:",
+    "runtime": "상영시간:",
+    "originalTitle": "원제:",
+    "language": "언어:",
+    "budget": "제작비:",
+    "revenue": "수익:",
+    "rating": "평점:",
+    "voteCount": "투표 수:",
+    "runtimeFormat": {
+      "hoursMinutes": "{hours}시간 {minutes}분",
+      "minutes": "{minutes}분"
+    }
+  },
+  "infiniteScroll": {
+    "loadMore": "아래로 스크롤하면 더 많은 영화를 볼 수 있습니다"
+  },
+  "tableView": {
+    "prev": "이전",
+    "next": "다음",
+    "page": "페이지 {currentPage} / {totalPages}"
+  },
+  "loading": "로딩 중...",
+  "movieCard": {
+    "wishlistAdd": "찜하기",
+    "wishlistRemove": "찜 취소",
+    "details": "자세히 보기",
+    "noOverview": "설명이 없습니다."
+  },
+  "home": {
+    "hero": {
+      "overviewPlaceholder": "지금 가장 인기 있는 영화를 만나보세요!",
+      "details": "상세보기"
+    },
+    "loading": "영화 목록을 불러오는 중...",
+    "error": {
+      "title": "오류가 발생했습니다",
+      "invalidKey": "API 키가 유효하지 않습니다. 로그아웃 후 올바른 TMDB API 키로 다시 로그인해주세요."
+    },
+    "sections": {
+      "dailyTrend": "일간 트렌드 영화",
+      "popularTv": "인기 TV 프로그램",
+      "nowPlaying": "현재 상영작",
+      "upcoming": "개봉 예정",
+      "topRated": "높은 평점",
+      "koreanPopularMovies": "한국 인기 영화",
+      "koreanPopularTv": "한국 인기 TV 프로그램",
+      "action": "추천 액션 영화",
+      "comedy": "추천 코미디 영화",
+      "romance": "추천 로맨스 영화",
+      "sf": "추천 SF 영화",
+      "horror": "추천 공포 영화",
+      "animation": "추천 애니메이션",
+      "documentary": "추천 다큐멘터리"
+    }
+  }
+}

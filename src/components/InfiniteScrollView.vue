@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
 import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
 import type { Movie } from '@/types/movie'
 import { getPopularMovies } from '@/utils/tmdb'
 
+const { t } = useI18n()
 const emit = defineEmits<{
   (e: 'movieClick', movie: Movie): void
 }>()
@@ -56,7 +58,8 @@ const loadMovies = async (page: number, append: boolean = false) => {
 
 const handleScroll = () => {
   if (!loading.value && !isLoadingMore.value) {
-    const scrollBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500
+    const scrollBottom =
+      window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 500
 
     if (scrollBottom && currentPage.value < totalPages.value) {
       loadMovies(currentPage.value + 1, true)
@@ -89,7 +92,12 @@ onUnmounted(() => {
       <!-- Movies Grid -->
       <div v-else key="movies">
         <div class="movie-grid">
-          <LargeMovieCard v-for="movie in movies" :key="movie.id" :movie="movie" @click="handleMovieClick" />
+          <LargeMovieCard
+            v-for="movie in movies"
+            :key="movie.id"
+            :movie="movie"
+            @click="handleMovieClick"
+          />
         </div>
 
         <!-- Loading More Skeleton -->
@@ -101,7 +109,7 @@ onUnmounted(() => {
         <div v-if="!isLoadingMore && currentPage < totalPages" class="load-more-info">
           <p>
             <i class="fas fa-arrow-down"></i>
-            아래로 스크롤하면 더 많은 영화를 볼 수 있습니다
+            {{ t('infiniteScroll.loadMore') }}
           </p>
         </div>
       </div>

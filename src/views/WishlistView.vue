@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
@@ -10,8 +11,13 @@ import type { Movie } from '@/types/movie'
 import { useWishlist } from '@/composables/useWishlist'
 import { useRecommendations } from '@/composables/useRecommendations'
 
+const { t } = useI18n()
 const { wishlist } = useWishlist()
-const { recommendations, loading: recommendationsLoading, getRecommendationsFromWishlist } = useRecommendations()
+const {
+  recommendations,
+  loading: recommendationsLoading,
+  getRecommendationsFromWishlist
+} = useRecommendations()
 
 const hasMovies = computed(() => wishlist.value.length > 0)
 const hasRecommendations = computed(() => recommendations.value.length > 0)
@@ -19,6 +25,29 @@ const selectedMovie = ref<Movie | null>(null)
 const showModal = ref(false)
 const sortBy = ref<string>('date_added') // 추가된 순서
 const filterGenre = ref<string>('')
+
+// 장르 ID를 이름으로 변환하는 매핑 (간단한 버전)
+const genreNames: Record<number, string> = {
+  28: t('wishlist.genres.Action'),
+  12: t('wishlist.genres.Adventure'),
+  16: t('wishlist.genres.Animation'),
+  35: t('wishlist.genres.Comedy'),
+  80: t('wishlist.genres.Crime'),
+  99: t('wishlist.genres.Documentary'),
+  18: t('wishlist.genres.Drama'),
+  10751: t('wishlist.genres.Family'),
+  14: t('wishlist.genres.Fantasy'),
+  36: t('wishlist.genres.History'),
+  27: t('wishlist.genres.Horror'),
+  10402: t('wishlist.genres.Music'),
+  9648: t('wishlist.genres.Mystery'),
+  10749: t('wishlist.genres.Romance'),
+  878: t('wishlist.genres.Science Fiction'),
+  10770: t('wishlist.genres.TV Movie'),
+  53: t('wishlist.genres.Thriller'),
+  10752: t('wishlist.genres.War'),
+  37: t('wishlist.genres.Western')
+}
 
 // 통계 계산
 const stats = computed(() => {
@@ -29,54 +58,53 @@ const stats = computed(() => {
 
   // 장르별 카운트
   const genreCounts: Record<number, number> = {}
-  movies.forEach(movie => {
-    movie.genre_ids?.forEach(genreId => {
+  movies.forEach((movie) => {
+    movie.genre_ids?.forEach((genreId) => {
       genreCounts[genreId] = (genreCounts[genreId] || 0) + 1
     })
   })
 
   // 가장 좋아하는 장르 (1위)
-  const topGenreEntry = Object.entries(genreCounts)
-    .sort((a, b) => b[1] - a[1])[0]
-  const favoriteGenre = topGenreEntry ? {
-    id: Number(topGenreEntry[0]),
-    name: genreNames[Number(topGenreEntry[0])] || '기타',
-    count: topGenreEntry[1],
-    percentage: Math.round((topGenreEntry[1] / totalMovies) * 100)
-  } : null
+  const topGenreEntry = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]
+  const favoriteGenre = topGenreEntry
+    ? {
+        id: Number(topGenreEntry[0]),
+        name: genreNames[Number(topGenreEntry[0])] || t('wishlist.genres.Other'),
+        count: topGenreEntry[1],
+        percentage: Math.round((topGenreEntry[1] / totalMovies) * 100)
+      }
+    : null
 
   // 개봉 연도 분석
-  const years = movies
-    .map(m => m.release_date?.split('-')[0])
-    .filter(Boolean)
-    .map(Number)
+  const years = movies.map((m) => m.release_date?.split('-')[0]).filter(Boolean).map(Number)
 
   // 연대별 그룹화 (2020년대, 2010년대, 2000년대, 그 이전)
   const decadeCounts: Record<string, number> = {}
-  years.forEach(year => {
+  years.forEach((year) => {
     let decade: string
-    if (year >= 2020) decade = '2020년대'
-    else if (year >= 2010) decade = '2010년대'
-    else if (year >= 2000) decade = '2000년대'
-    else if (year >= 1990) decade = '1990년대'
-    else decade = '클래식'
+    if (year >= 2020) decade = t('wishlist.decades.2020s')
+    else if (year >= 2010) decade = t('wishlist.decades.2010s')
+    else if (year >= 2000) decade = t('wishlist.decades.2000s')
+    else if (year >= 1990) decade = t('wishlist.decades.1990s')
+    else decade = t('wishlist.decades.classic')
 
     decadeCounts[decade] = (decadeCounts[decade] || 0) + 1
   })
 
-  const favoriteDecadeEntry = Object.entries(decadeCounts)
-    .sort((a, b) => b[1] - a[1])[0]
-  const favoriteDecade = favoriteDecadeEntry ? {
-    decade: favoriteDecadeEntry[0],
-    count: favoriteDecadeEntry[1],
-    percentage: Math.round((favoriteDecadeEntry[1] / totalMovies) * 100)
-  } : null
+  const favoriteDecadeEntry = Object.entries(decadeCounts).sort((a, b) => b[1] - a[1])[0]
+  const favoriteDecade = favoriteDecadeEntry
+    ? {
+        decade: favoriteDecadeEntry[0],
+        count: favoriteDecadeEntry[1],
+        percentage: Math.round((favoriteDecadeEntry[1] / totalMovies) * 100)
+      }
+    : null
 
   // 시청 시간 계산 (평균 러닝타임이 없으므로 평균 2시간으로 가정)
   const estimatedHours = Math.round((totalMovies * 120) / 60)
 
   // 한국 영화 vs 외국 영화
-  const koreanMovies = movies.filter(m => m.original_language === 'ko').length
+  const koreanMovies = movies.filter((m) => m.original_language === 'ko').length
   const globalMovies = totalMovies - koreanMovies
   const koreanPercentage = Math.round((koreanMovies / totalMovies) * 100)
   const isKoreanPreferred = koreanMovies > globalMovies
@@ -99,7 +127,7 @@ const filteredAndSortedMovies = computed(() => {
 
   // 장르 필터
   if (filterGenre.value) {
-    movies = movies.filter(m => m.genre_ids?.includes(Number(filterGenre.value)))
+    movies = movies.filter((m) => m.genre_ids?.includes(Number(filterGenre.value)))
   }
 
   // 정렬
@@ -130,19 +158,11 @@ const filteredAndSortedMovies = computed(() => {
 // 장르 목록 (찜한 영화에서 추출)
 const availableGenres = computed(() => {
   const genreSet = new Set<number>()
-  wishlist.value.forEach(movie => {
-    movie.genre_ids?.forEach(id => genreSet.add(id))
+  wishlist.value.forEach((movie) => {
+    movie.genre_ids?.forEach((id) => genreSet.add(id))
   })
   return Array.from(genreSet)
 })
-
-// 장르 ID를 이름으로 변환하는 매핑 (간단한 버전)
-const genreNames: Record<number, string> = {
-  28: '액션', 12: '모험', 16: '애니메이션', 35: '코미디', 80: '범죄',
-  99: '다큐멘터리', 18: '드라마', 10751: '가족', 14: '판타지', 36: '역사',
-  27: '공포', 10402: '음악', 9648: '미스터리', 10749: '로맨스', 878: 'SF',
-  10770: 'TV 영화', 53: '스릴러', 10752: '전쟁', 37: '서부'
-}
 
 const handleMovieClick = (movie: Movie) => {
   selectedMovie.value = movie
@@ -157,11 +177,43 @@ const handleCloseModal = () => {
 }
 
 // 찜 목록이 변경될 때마다 추천 영화 로드
-watch(wishlist, (newWishlist) => {
-  if (newWishlist.length > 0) {
-    getRecommendationsFromWishlist(newWishlist)
+
+watch(
+
+  wishlist,
+
+  (newWishlist) => {
+
+    if (newWishlist.length > 0) {
+
+      getRecommendationsFromWishlist(newWishlist)
+
+    }
+
+  },
+
+  { immediate: true }
+
+)
+
+
+
+watch(
+
+  () => t('wishlist.title'),
+
+  () => {
+
+    if (wishlist.value.length > 0) {
+
+      getRecommendationsFromWishlist(wishlist.value)
+
+    }
+
   }
-}, { immediate: true })
+
+)
+
 </script>
 
 <template>
@@ -173,9 +225,11 @@ watch(wishlist, (newWishlist) => {
         <div class="section-header">
           <h1 class="section-title">
             <i class="fas fa-heart" style="color: var(--primary-color)"></i>
-            내가 찜한 리스트
+            {{ t('wishlist.title') }}
           </h1>
-          <span v-if="hasMovies" class="text-secondary">총 {{ wishlist.length }}개의 영화</span>
+          <span v-if="hasMovies" class="text-secondary">{{
+            t('wishlist.totalMovies', { count: wishlist.length })
+          }}</span>
         </div>
 
         <!-- 통계 대시보드 -->
@@ -186,8 +240,10 @@ watch(wishlist, (newWishlist) => {
             </div>
             <div class="stat-info">
               <div class="stat-value">{{ stats.totalMovies }}</div>
-              <div class="stat-label">찜한 영화</div>
-              <div class="stat-detail">약 {{ stats.estimatedHours }}시간 분량</div>
+              <div class="stat-label">{{ t('wishlist.stats.total') }}</div>
+              <div class="stat-detail">
+                {{ t('wishlist.stats.watchTime', { hours: stats.estimatedHours }) }}
+              </div>
             </div>
           </div>
 
@@ -197,8 +253,15 @@ watch(wishlist, (newWishlist) => {
             </div>
             <div class="stat-info">
               <div class="stat-value-small">{{ stats.favoriteGenre.name }}</div>
-              <div class="stat-label">가장 좋아하는 장르</div>
-              <div class="stat-detail">{{ stats.favoriteGenre.count }}개 ({{ stats.favoriteGenre.percentage }}%)</div>
+              <div class="stat-label">{{ t('wishlist.stats.favoriteGenre') }}</div>
+              <div class="stat-detail">
+                {{
+                  t('wishlist.stats.genreCount', {
+                    count: stats.favoriteGenre.count,
+                    percentage: stats.favoriteGenre.percentage
+                  })
+                }}
+              </div>
             </div>
           </div>
 
@@ -208,8 +271,15 @@ watch(wishlist, (newWishlist) => {
             </div>
             <div class="stat-info">
               <div class="stat-value-small">{{ stats.favoriteDecade.decade }}</div>
-              <div class="stat-label">선호하는 시대</div>
-              <div class="stat-detail">{{ stats.favoriteDecade.count }}개 ({{ stats.favoriteDecade.percentage }}%)</div>
+              <div class="stat-label">{{ t('wishlist.stats.favoriteDecade') }}</div>
+              <div class="stat-detail">
+                {{
+                  t('wishlist.stats.decadeCount', {
+                    count: stats.favoriteDecade.count,
+                    percentage: stats.favoriteDecade.percentage
+                  })
+                }}
+              </div>
             </div>
           </div>
 
@@ -219,11 +289,17 @@ watch(wishlist, (newWishlist) => {
             </div>
             <div class="stat-info">
               <div class="stat-value-small">
-                {{ stats.isKoreanPreferred ? '한국' : '글로벌' }}
+                {{ stats.isKoreanPreferred ? t('wishlist.stats.korean') : t('wishlist.stats.global') }}
               </div>
-              <div class="stat-label">영화 취향</div>
+              <div class="stat-label">{{ t('wishlist.stats.movieTaste') }}</div>
               <div class="stat-detail">
-                한국 {{ stats.koreanMovies }}개 ({{ stats.koreanPercentage }}%) • 외국 {{ stats.globalMovies }}개
+                {{
+                  t('wishlist.stats.koreanMovies', {
+                    korean: stats.koreanMovies,
+                    percentage: stats.koreanPercentage,
+                    global: stats.globalMovies
+                  })
+                }}
               </div>
             </div>
           </div>
@@ -235,27 +311,33 @@ watch(wishlist, (newWishlist) => {
             <div class="filter-controls">
               <div class="filter-group-inline">
                 <label class="filter-label-inline" for="genre-filter">
-                  <i class="fas fa-filter"></i> 장르
+                  <i class="fas fa-filter"></i> {{ t('wishlist.filters.genre') }}
                 </label>
                 <select id="genre-filter" class="filter-select-inline" v-model="filterGenre">
-                  <option value="">전체</option>
+                  <option value="">{{ t('wishlist.filters.all') }}</option>
                   <option v-for="genreId in availableGenres" :key="genreId" :value="genreId">
-                    {{ genreNames[genreId] || `장르 ${genreId}` }}
+                    {{ genreNames[genreId] || `${t('wishlist.filters.genre')} ${genreId}` }}
                   </option>
                 </select>
               </div>
 
               <div class="filter-group-inline">
                 <label class="filter-label-inline" for="sort-select">
-                  <i class="fas fa-sort"></i> 정렬
+                  <i class="fas fa-sort"></i> {{ t('wishlist.filters.sort') }}
                 </label>
                 <select id="sort-select" class="filter-select-inline" v-model="sortBy">
-                  <option value="date_added">추가된 순서</option>
-                  <option value="rating_desc">평점 높은 순</option>
-                  <option value="rating_asc">평점 낮은 순</option>
-                  <option value="title_asc">제목 가나다순</option>
-                  <option value="release_date_desc">최신 개봉순</option>
-                  <option value="release_date_asc">오래된 개봉순</option>
+                  <option value="date_added">{{ t('wishlist.filters.sortBy.date_added') }}</option>
+                  <option value="rating_desc">
+                    {{ t('wishlist.filters.sortBy.rating_desc') }}
+                  </option>
+                  <option value="rating_asc">{{ t('wishlist.filters.sortBy.rating_asc') }}</option>
+                  <option value="title_asc">{{ t('wishlist.filters.sortBy.title_asc') }}</option>
+                  <option value="release_date_desc">
+                    {{ t('wishlist.filters.sortBy.release_date_desc') }}
+                  </option>
+                  <option value="release_date_asc">
+                    {{ t('wishlist.filters.sortBy.release_date_asc') }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -263,8 +345,14 @@ watch(wishlist, (newWishlist) => {
 
           <div class="results-info">
             <span class="text-secondary">
-              {{ filteredAndSortedMovies.length }}개의 영화
-              <span v-if="filterGenre"> • {{ genreNames[Number(filterGenre)] }} 필터 적용됨</span>
+              {{ t('wishlist.filters.results', { count: filteredAndSortedMovies.length }) }}
+              <span v-if="filterGenre">
+                {{
+                  t('wishlist.filters.filteredBy', {
+                    genre: genreNames[Number(filterGenre)]
+                  })
+                }}</span
+              >
             </span>
           </div>
 
@@ -278,15 +366,21 @@ watch(wishlist, (newWishlist) => {
           </div>
 
           <!-- 추천 섹션 -->
-          <section v-if="hasRecommendations || recommendationsLoading" class="recommendations-section">
+          <section
+            v-if="hasRecommendations || recommendationsLoading"
+            class="recommendations-section"
+          >
             <div class="section-header">
               <h2 class="section-title">
-                내 취향 저격 영화
+                {{ t('wishlist.recommendations.title') }}
               </h2>
-              <p class="text-secondary">찜한 영화를 바탕으로 추천해드려요</p>
+              <p class="text-secondary">{{ t('wishlist.recommendations.subtitle') }}</p>
             </div>
 
-            <LoadingSpinner v-if="recommendationsLoading" text="추천 영화를 찾고 있습니다..." />
+            <LoadingSpinner
+              v-if="recommendationsLoading"
+              :text="t('wishlist.recommendations.loading')"
+            />
 
             <MovieSlider
               v-else-if="hasRecommendations"
@@ -304,13 +398,12 @@ watch(wishlist, (newWishlist) => {
 
         <div v-else class="empty-state">
           <i class="fas fa-heart-broken empty-state-icon"></i>
-          <h2 class="empty-state-title">찜한 영화가 없습니다</h2>
-          <p class="empty-state-description">
-            마음에 드는 영화를 찜해보세요!<br />
-            영화 카드의 하트 아이콘을 클릭하면 이 목록에 추가됩니다.
+          <h2 class="empty-state-title">{{ t('wishlist.empty.title') }}</h2>
+          <p class="empty-state-description" style="white-space: pre-wrap">
+            {{ t('wishlist.empty.description') }}
           </p>
           <RouterLink to="/" class="btn btn-primary mt-4">
-            <i class="fas fa-film"></i> 영화 둘러보기
+            <i class="fas fa-film"></i> {{ t('wishlist.empty.browse') }}
           </RouterLink>
         </div>
       </div>
