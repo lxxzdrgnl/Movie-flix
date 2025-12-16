@@ -1,7 +1,9 @@
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Movie } from '@/types/movie'
 import { storage, STORAGE_KEYS } from '@/utils/localStorage'
 import { getCurrentUser } from '@/utils/auth'
+import { getMovieDetails } from '@/utils/tmdb'
 
 const wishlist = ref<Movie[]>([])
 
@@ -30,6 +32,7 @@ const saveWishlist = (): void => {
 }
 
 export const useWishlist = () => {
+  const { locale } = useI18n()
   /**
    * 위시리스트에 영화 추가/제거
    */
@@ -89,8 +92,32 @@ export const useWishlist = () => {
   }
 
   // 사용자 변경 시 위시리스트 다시 로드
-  watch(() => getCurrentUser(), () => {
-    loadWishlist()
+  watch(
+    () => getCurrentUser(),
+    () => {
+      loadWishlist()
+    }
+  )
+
+  watch(locale, async (newLocale, oldLocale) => {
+    if (newLocale !== oldLocale && wishlist.value.length > 0) {
+      const updatedWishlist = await Promise.all(
+        wishlist.value.map(async (movie) => {
+          try {
+            const updatedDetails = await getMovieDetails(movie.id)
+            return { ...movie, ...updatedDetails }
+          } catch (error) {
+            console.error(
+              `Error refetching details for movie ${movie.id} in ${newLocale}:`,
+              error
+            )
+            return movie // Fallback to old movie data on error
+          }
+        })
+      )
+      wishlist.value = updatedWishlist
+      saveWishlist()
+    }
   })
 
   return {
@@ -100,6 +127,6 @@ export const useWishlist = () => {
     getWishlist,
     removeFromWishlist,
     clearWishlist,
-    wishlistCount,
+    wishlistCount
   }
 }

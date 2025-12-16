@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { MovieResponse, Genre } from '@/types/movie'
 import { storage, STORAGE_KEYS } from './localStorage'
+import i18n from '@/i18n'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p'
@@ -22,7 +23,8 @@ const createUrl = (
 ): string => {
   const url = new URL(`${BASE_URL}${endpoint}`)
   url.searchParams.append('api_key', apiKey || getUserApiKey())
-  url.searchParams.append('language', 'ko-KR')
+  const lang = i18n.global.locale.value === 'ko' ? 'ko-KR' : 'en-US'
+  url.searchParams.append('language', lang)
 
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.append(key, String(value))
@@ -117,9 +119,7 @@ export const discoverMovies = (
   return fetchMovies('/discover/movie', params)
 }
 
-export const discoverTvShows = (
-  params: Record<string, string | number> = {}
-): Promise<any> => {
+export const discoverTvShows = (params: Record<string, string | number> = {}): Promise<any> => {
   return fetchData<any>('/discover/tv', params)
 }
 

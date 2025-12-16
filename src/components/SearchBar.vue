@@ -5,13 +5,11 @@
         v-model="searchQuery"
         type="text"
         class="search-input"
-        placeholder="영화를 검색하세요..."
+        :placeholder="t('search.searchBar.placeholder')"
         @keyup.enter="handleSearch"
         @focus="showHistory = true"
       />
-      <button v-if="searchQuery" class="clear-input-btn" @click="clearInput">
-        ✕
-      </button>
+      <button v-if="searchQuery" class="clear-input-btn" @click="clearInput">✕</button>
       <button class="search-btn" @click="handleSearch">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -31,8 +29,10 @@
     <!-- 검색 히스토리 드롭다운 -->
     <div v-if="showHistory && recentSearches.length > 0" class="search-history-dropdown">
       <div class="history-header">
-        <span class="history-title">최근 검색어</span>
-        <button class="clear-all-btn" @click="handleClearAll">전체 삭제</button>
+        <span class="history-title">{{ t('search.history.title') }}</span>
+        <button class="clear-all-btn" @click="handleClearAll">
+          {{ t('search.history.clearAll') }}
+        </button>
       </div>
 
       <ul class="history-list">
@@ -53,7 +53,11 @@
             </svg>
             <span>{{ item.query }}</span>
           </button>
-          <button class="delete-btn" @click="handleDelete(item.query)" title="삭제">
+          <button
+            class="delete-btn"
+            @click="handleDelete(item.query)"
+            :title="t('search.history.delete')"
+          >
             ✕
           </button>
         </li>
@@ -67,7 +71,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useSearchHistory } from '@/composables/useSearchHistory'
+
+const { t } = useI18n()
 
 // Props
 interface Props {
@@ -78,8 +85,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
-  placeholder: '영화를 검색하세요...',
-  maxHistoryItems: 10,
+  placeholder: t('search.searchBar.placeholder'),
+  maxHistoryItems: 10
 })
 
 // Emits
@@ -135,7 +142,7 @@ const handleDelete = (query: string) => {
 
 // 전체 검색어 삭제
 const handleClearAll = () => {
-  if (confirm('모든 검색 기록을 삭제하시겠습니까?')) {
+  if (confirm(t('search.history.confirmClear'))) {
     clearSearchHistory()
     showHistory.value = false
   }
@@ -157,6 +164,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
 
 <style scoped>
 .search-container {

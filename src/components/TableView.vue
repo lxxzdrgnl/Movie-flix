@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
 import MovieCardSkeleton from '@/components/MovieCardSkeleton.vue'
 import type { Movie } from '@/types/movie'
 import { getPopularMovies } from '@/utils/tmdb'
 
+const { t } = useI18n()
 const emit = defineEmits<{
   (e: 'movieClick', movie: Movie): void
   (e: 'pageChange'): void
@@ -97,17 +99,15 @@ onMounted(() => {
     <div v-if="!loading" class="pagination">
       <button class="pagination-btn" :disabled="currentPage === 2" @click="prevPage">
         <i class="fas fa-chevron-left"></i>
-        이전
+        {{ t('tableView.prev') }}
       </button>
 
-      <div class="pagination-info">페이지 {{ currentPage }} / {{ totalPages }}</div>
+      <div class="pagination-info">
+        {{ t('tableView.page', { currentPage: currentPage, totalPages: totalPages }) }}
+      </div>
 
-      <button
-        class="pagination-btn"
-        :disabled="currentPage === totalPages"
-        @click="nextPage"
-      >
-        다음
+      <button class="pagination-btn" :disabled="currentPage === totalPages" @click="nextPage">
+        {{ t('tableView.next') }}
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>

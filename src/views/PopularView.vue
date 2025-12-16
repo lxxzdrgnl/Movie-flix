@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 import LargeMovieCard from '@/components/LargeMovieCard.vue'
@@ -11,6 +12,7 @@ import TableView from '@/components/TableView.vue'
 import type { Movie } from '@/types/movie'
 import { getPopularMovies, getBackdropUrl } from '@/utils/tmdb'
 
+const { t, locale } = useI18n()
 const firstPageMovies = ref<Movie[]>([])
 const topMovies = ref<Movie[]>([])
 const loading = ref(false)
@@ -102,6 +104,10 @@ const handlePageChange = () => {
   }
 }
 
+watch(locale, () => {
+  loadInitialData()
+})
+
 onMounted(() => {
   loadInitialData()
   window.addEventListener('scroll', handleScroll)
@@ -120,49 +126,49 @@ onUnmounted(() => {
     <!-- Hero Banner -->
     <Transition name="hero-fade" mode="out-in">
       <div v-if="heroMovie && !loading" :key="heroMovie.id" class="hero-banner">
-          <img
-            :src="getBackdropUrl(heroMovie.backdrop_path)"
-            :alt="heroMovie.title"
-            class="hero-banner-bg"
-          />
-          <div class="hero-banner-overlay"></div>
-          <div class="hero-banner-content">
-            <div class="hero-badge">
-              <i class="fas fa-fire"></i>
-              인기 급상승
-            </div>
-            <h1 class="hero-banner-title">{{ heroMovie.title }}</h1>
-            <div class="hero-banner-meta">
-              <span class="hero-banner-rating">
-                <i class="fas fa-star"></i>
-                {{ heroMovie.vote_average.toFixed(1) }}
-              </span>
-              <span class="hero-banner-year">
-                {{ heroMovie.release_date?.split('-')[0] || 'N/A' }}
-              </span>
-            </div>
-            <p class="hero-banner-description">
-              {{ heroMovie.overview || '지금 가장 인기 있는 영화를 만나보세요!' }}
-            </p>
-            <div class="hero-banner-actions">
-              <button class="btn btn-primary" @click="handleMovieClick(heroMovie)">
-                <i class="fas fa-play"></i> 상세보기
-              </button>
-            </div>
+        <img
+          :src="getBackdropUrl(heroMovie.backdrop_path)"
+          :alt="heroMovie.title"
+          class="hero-banner-bg"
+        />
+        <div class="hero-banner-overlay"></div>
+        <div class="hero-banner-content">
+          <div class="hero-badge">
+            <i class="fas fa-fire"></i>
+            {{ t('popular.hero.trending') }}
+          </div>
+          <h1 class="hero-banner-title">{{ heroMovie.title }}</h1>
+          <div class="hero-banner-meta">
+            <span class="hero-banner-rating">
+              <i class="fas fa-star"></i>
+              {{ heroMovie.vote_average.toFixed(1) }}
+            </span>
+            <span class="hero-banner-year">
+              {{ heroMovie.release_date?.split('-')[0] || 'N/A' }}
+            </span>
+          </div>
+          <p class="hero-banner-description">
+            {{ heroMovie.overview || t('home.hero.overviewPlaceholder') }}
+          </p>
+          <div class="hero-banner-actions">
+            <button class="btn btn-primary" @click="handleMovieClick(heroMovie)">
+              <i class="fas fa-play"></i> {{ t('home.hero.details') }}
+            </button>
+          </div>
         </div>
       </div>
     </Transition>
 
     <main class="page-container">
       <div class="container">
-        <LoadingSpinner v-if="loading" text="영화 목록을 불러오는 중..." />
+        <LoadingSpinner v-if="loading" :text="t('home.loading')" />
 
         <div v-else>
           <!-- Top 10 Section with Slider -->
           <section class="section">
             <div class="section-header">
               <h2 class="section-title">
-                Top 10 인기 영화
+                {{ t('popular.sections.top10') }}
               </h2>
             </div>
 
@@ -186,7 +192,7 @@ onUnmounted(() => {
           <section class="section">
             <div class="section-header">
               <h2 class="section-title">
-                지금 인기 있는 영화
+                {{ t('popular.sections.popularNow') }}
               </h2>
             </div>
 
@@ -200,7 +206,7 @@ onUnmounted(() => {
           <!-- View Section with Toggle -->
           <section ref="moreMoviesSection" class="section">
             <div class="section-header">
-              <h2 class="section-title">더 많은 인기 영화</h2>
+              <h2 class="section-title">{{ t('popular.sections.more') }}</h2>
               <div class="view-mode-toggle">
                 <button
                   class="view-mode-btn"
@@ -208,7 +214,7 @@ onUnmounted(() => {
                   @click="switchViewMode('infinite')"
                 >
                   <i class="fas fa-infinity"></i>
-                  무한 스크롤
+                  {{ t('popular.viewMode.infinite') }}
                 </button>
                 <button
                   class="view-mode-btn"
@@ -216,7 +222,7 @@ onUnmounted(() => {
                   @click="switchViewMode('table')"
                 >
                   <i class="fas fa-table"></i>
-                  테이블 뷰
+                  {{ t('popular.viewMode.table') }}
                 </button>
               </div>
             </div>
@@ -225,23 +231,32 @@ onUnmounted(() => {
             <div class="views-container">
               <Transition name="view-fade" mode="out-in">
                 <KeepAlive>
-                  <InfiniteScrollView v-if="!isTableView" key="infinite" @movie-click="handleMovieClick" />
-                  <TableView v-else key="table" @movie-click="handleMovieClick" @page-change="handlePageChange" />
+                  <InfiniteScrollView
+                    v-if="!isTableView"
+                    key="infinite"
+                    @movie-click="handleMovieClick"
+                  />
+                  <TableView
+                    v-else
+                    key="table"
+                    @movie-click="handleMovieClick"
+                    @page-change="handlePageChange"
+                  />
                 </KeepAlive>
               </Transition>
             </div>
           </section>
-          </div>
         </div>
+      </div>
 
-        <button
-          v-if="!isTableView"
-          class="scroll-top-btn"
-          :class="{ visible: showScrollTop }"
-          @click="scrollToTop"
-        >
-          <i class="fas fa-arrow-up"></i>
-        </button>
+      <button
+        v-if="!isTableView"
+        class="scroll-top-btn"
+        :class="{ visible: showScrollTop }"
+        @click="scrollToTop"
+      >
+        <i class="fas fa-arrow-up"></i>
+      </button>
     </main>
 
     <AppFooter />
@@ -518,6 +533,37 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .hero-banner {
+    height: 45vh;
+    min-height: 350px;
+    max-height: 450px;
+  }
+
+  .hero-banner-content {
+    padding: 0 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-banner-title {
+    font-size: 2rem;
+  }
+
+  .hero-banner-meta {
+    font-size: 0.95rem;
+    gap: 1rem;
+  }
+
+  .hero-banner-description {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .hero-banner-actions .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
   .view-mode-btn {
     padding: 0.4rem 0.8rem;
     font-size: 0.85rem;
@@ -541,6 +587,32 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
+  .hero-banner {
+    height: 55vh;
+    min-height: 300px;
+  }
+
+  .hero-banner-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-banner-meta {
+    font-size: 0.85rem;
+  }
+
+  .hero-banner-description {
+    font-size: 0.85rem;
+  }
+
+  .hero-banner-actions {
+    flex-direction: column;
+  }
+
+  .hero-banner-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .view-mode-btn {
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
@@ -550,7 +622,7 @@ onUnmounted(() => {
     font-size: 0.9rem;
   }
 
-  .table-view-grid {
+  .table-view-.grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
