@@ -9,7 +9,7 @@ const getBrowserLocale = () => {
 
 const i18n = createI18n({
   legacy: false, // Use Composition API
-  locale: localStorage.getItem('locale') || getBrowserLocale() || 'ko',
+  locale: localStorage.getItem('locale') || getBrowserLocale() || 'en',
   fallbackLocale: 'en',
   messages: {
     en,
