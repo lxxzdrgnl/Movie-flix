@@ -1,36 +1,26 @@
 import type { User } from '@/types/movie'
 import { storage, STORAGE_KEYS, CACHE_DURATION } from './localStorage'
-import { validateApiKey } from './tmdb'
 
 /**
  * 로그인 시도
- * 비밀번호(TMDB API 키)의 유효성을 실제 API 호출로 검증
  */
 export const tryLogin = async (
   email: string,
-  apiKey: string,
+  password: string,
   success: (user: User) => void,
   fail: (message: string) => void
 ): Promise<void> => {
   const users: User[] = storage.getItem<User[]>(STORAGE_KEYS.AUTH_USERS) || []
-  const user = users.find((u) => u.id === email && u.password === apiKey)
+  const user = users.find((u) => u.id === email && u.password === password)
 
   if (!user) {
-    fail('이메일 또는 API 키가 일치하지 않습니다.')
-    return
-  }
-
-  // TMDB API 키 유효성 검증
-  const isValidKey = await validateApiKey(apiKey)
-  if (!isValidKey) {
-    fail('유효하지 않은 TMDB API 키입니다.')
+    fail('이메일 또는 비밀번호가 일치하지 않습니다.')
     return
   }
 
   // 로그인 성공
   storage.setItem(STORAGE_KEYS.AUTH_IS_LOGGED_IN, true)
   storage.setItem(STORAGE_KEYS.AUTH_CURRENT_USER, email)
-  storage.setItem(STORAGE_KEYS.AUTH_TOKEN, apiKey) // 사용자의 API 키 저장
 
   // 세션 만료 시간 설정 (24시간)
   storage.setItem(
@@ -44,11 +34,10 @@ export const tryLogin = async (
 
 /**
  * 회원가입 시도
- * TMDB API 키의 유효성을 실제 API 호출로 검증
  */
 export const tryRegister = async (
   email: string,
-  apiKey: string,
+  password: string,
   success: () => void,
   fail: (message: string) => void
 ): Promise<void> => {
@@ -67,21 +56,14 @@ export const tryRegister = async (
     return
   }
 
-  // API 키 길이 검증 (TMDB API 키는 32자)
-  if (apiKey.length < 20) {
-    fail('TMDB API 키는 최소 20자 이상이어야 합니다.')
+  // 비밀번호 길이 검증
+  if (password.length < 6) {
+    fail('비밀번호는 최소 6자 이상이어야 합니다.')
     return
   }
 
-  // TMDB API 키 유효성 검증
-  const isValidKey = await validateApiKey(apiKey)
-  if (!isValidKey) {
-    fail('유효하지 않은 TMDB API 키입니다. API 키를 확인해주세요.')
-    return
-  }
-
-  // 새 사용자 추가 (API 키는 암호화하여 저장)
-  users.push({ id: email, password: apiKey })
+  // 새 사용자 추가 (비밀번호는 암호화하여 저장)
+  users.push({ id: email, password: password })
   storage.setItem(STORAGE_KEYS.AUTH_USERS, users, { encrypt: true })
 
   success()
@@ -95,7 +77,6 @@ export const logout = (): void => {
   storage.removeItem(STORAGE_KEYS.AUTH_CURRENT_USER)
   storage.removeItem(STORAGE_KEYS.AUTH_KEEP_LOGIN)
   storage.removeItem(STORAGE_KEYS.AUTH_SESSION_EXPIRY)
-  storage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
 }
 
 /**

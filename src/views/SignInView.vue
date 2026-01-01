@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -20,16 +20,15 @@ const showLanguageMenu = ref(false)
 
 const isSignUp = ref(false)
 const email = ref('')
-const apiKey = ref('')
-const confirmApiKey = ref('')
+const password = ref('')
+const confirmPassword = ref('')
 const rememberMe = ref(false)
 const agreeTerms = ref(false)
 const emailError = ref('')
-const apiKeyError = ref('')
-const confirmApiKeyError = ref('')
+const passwordError = ref('')
+const confirmPasswordError = ref('')
 const isLoading = ref(false)
 const isEmailChecked = ref(false)
-const isApiKeyValidated = ref(false)
 
 const changeLanguage = (newLocale: string) => {
   locale.value = newLocale
@@ -40,6 +39,25 @@ const changeLanguage = (newLocale: string) => {
 const toggleLanguageMenu = () => {
   showLanguageMenu.value = !showLanguageMenu.value
 }
+
+// 외부 클릭시 언어 메뉴 닫기
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  const languageMenu = document.querySelector('.language-menu-container')
+
+  if (languageMenu && !languageMenu.contains(target)) {
+    showLanguageMenu.value = false
+  }
+}
+
+// 컴포넌트 마운트시 이벤트 리스너 추가
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 const showToast = (type: 'success' | 'error', title: string, message: string) => {
   toastRef.value?.addToast(type, title, message)
@@ -58,31 +76,31 @@ const validateEmail = () => {
   return true
 }
 
-const validateApiKey = () => {
-  if (!apiKey.value) {
-    apiKeyError.value = t('signIn.errors.apiKeyRequired')
+const validatePassword = () => {
+  if (!password.value) {
+    passwordError.value = t('signIn.errors.passwordRequired')
     return false
   }
-  if (apiKey.value.length < 20) {
-    apiKeyError.value = t('signIn.errors.apiKeyMinLength')
+  if (password.value.length < 6) {
+    passwordError.value = t('signIn.errors.passwordMinLength')
     return false
   }
-  apiKeyError.value = ''
+  passwordError.value = ''
   return true
 }
 
-const validateConfirmApiKey = () => {
+const validateConfirmPassword = () => {
   if (isSignUp.value) {
-    if (!confirmApiKey.value) {
-      confirmApiKeyError.value = t('signIn.errors.confirmApiKeyRequired')
+    if (!confirmPassword.value) {
+      confirmPasswordError.value = t('signIn.errors.confirmPasswordRequired')
       return false
     }
-    if (apiKey.value !== confirmApiKey.value) {
-      confirmApiKeyError.value = t('signIn.errors.apiKeyMismatch')
+    if (password.value !== confirmPassword.value) {
+      confirmPasswordError.value = t('signIn.errors.passwordMismatch')
       return false
     }
   }
-  confirmApiKeyError.value = ''
+  confirmPasswordError.value = ''
   return true
 }
 
@@ -119,47 +137,15 @@ const checkEmailDuplicate = () => {
   }, 500)
 }
 
-// API 키 유효성 검증
-const validateApiKeyOnServer = async () => {
-  if (!validateApiKey()) {
-    return
-  }
-
-  isLoading.value = true
-  try {
-    const { validateApiKey: checkApiKey } = await import('@/utils/tmdb')
-    const isValid = await checkApiKey(apiKey.value)
-
-    if (isValid) {
-      isApiKeyValidated.value = true
-      showToast(
-        'success',
-        t('signIn.errors.apiValidationSuccess'),
-        t('signIn.errors.validApiKey')
-      )
-    } else {
-      isApiKeyValidated.value = false
-      apiKeyError.value = t('signIn.errors.invalidApiKey')
-      showToast('error', t('signIn.errors.apiValidationFailed'), t('signIn.errors.invalidApiKey'))
-    }
-  } catch (error) {
-    isApiKeyValidated.value = false
-    apiKeyError.value = t('signIn.errors.apiKeyCheckError')
-    showToast('error', t('signIn.errors.apiValidationError'), t('signIn.errors.apiKeyCheckError'))
-  } finally {
-    isLoading.value = false
-  }
-}
-
 const handleLogin = async () => {
-  if (!validateEmail() || !validateApiKey()) {
+  if (!validateEmail() || !validatePassword()) {
     return
   }
 
   isLoading.value = true
   await tryLogin(
     email.value,
-    apiKey.value,
+    password.value,
     (user) => {
       authStore.login(user.id)
       if (rememberMe.value) {
@@ -178,17 +164,12 @@ const handleLogin = async () => {
 }
 
 const handleSignUp = async () => {
-  if (!validateEmail() || !validateApiKey() || !validateConfirmApiKey()) {
+  if (!validateEmail() || !validatePassword() || !validateConfirmPassword()) {
     return
   }
 
   if (!isEmailChecked.value) {
     showToast('error', t('signIn.errors.signUpFailed'), t('signIn.errors.emailNotChecked'))
-    return
-  }
-
-  if (!isApiKeyValidated.value) {
-    showToast('error', t('signIn.errors.signUpFailed'), t('signIn.errors.apiKeyNotValidated'))
     return
   }
 
@@ -200,7 +181,7 @@ const handleSignUp = async () => {
   isLoading.value = true
   await tryRegister(
     email.value,
-    apiKey.value,
+    password.value,
     () => {
       showToast(
         'success',
@@ -209,10 +190,9 @@ const handleSignUp = async () => {
       )
       setTimeout(() => {
         isSignUp.value = false
-        confirmApiKey.value = ''
+        confirmPassword.value = ''
         agreeTerms.value = false
         isEmailChecked.value = false
-        isApiKeyValidated.value = false
       }, 1000)
     },
     (message) => {
@@ -225,12 +205,11 @@ const handleSignUp = async () => {
 const toggleMode = () => {
   isSignUp.value = !isSignUp.value
   emailError.value = ''
-  apiKeyError.value = ''
-  confirmApiKeyError.value = ''
-  confirmApiKey.value = ''
+  passwordError.value = ''
+  confirmPasswordError.value = ''
+  confirmPassword.value = ''
   agreeTerms.value = false
   isEmailChecked.value = false
-  isApiKeyValidated.value = false
 }
 
 const handleSubmit = () => {
@@ -245,13 +224,6 @@ const handleSubmit = () => {
 watch(email, () => {
   if (isSignUp.value) {
     isEmailChecked.value = false
-  }
-})
-
-// API 키가 변경되면 검증 상태 초기화
-watch(apiKey, () => {
-  if (isSignUp.value) {
-    isApiKeyValidated.value = false
   }
 })
 </script>
@@ -302,50 +274,35 @@ watch(apiKey, () => {
           </div>
 
           <div class="input-group">
-            <label class="input-label" for="apiKey">{{ t('signIn.apiKeyLabel') }}</label>
-            <div class="input-with-button">
-              <input
-                id="apiKey"
-                type="text"
-                class="input-field"
-                :class="{
-                  'input-error': apiKeyError,
-                  'input-success': isSignUp && isApiKeyValidated
-                }"
-                v-model="apiKey"
-                @blur="validateApiKey"
-                :placeholder="t('signIn.apiKeyPlaceholder')"
-                required
-              />
-              <button
-                v-if="isSignUp"
-                type="button"
-                class="btn-check"
-                :class="{ 'btn-checked': isApiKeyValidated }"
-                @click="validateApiKeyOnServer"
-                :disabled="isLoading"
-              >
-                {{ isApiKeyValidated ? t('signIn.validateApiSuccess') : t('signIn.validateApi') }}
-              </button>
-            </div>
-            <p v-if="apiKeyError" class="error-message">{{ apiKeyError }}</p>
+            <label class="input-label" for="password">{{ t('signIn.passwordLabel') }}</label>
+            <input
+              id="password"
+              type="password"
+              class="input-field"
+              :class="{ 'input-error': passwordError }"
+              v-model="password"
+              @blur="validatePassword"
+              :placeholder="t('signIn.passwordPlaceholder')"
+              required
+            />
+            <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
           </div>
 
           <div v-if="isSignUp" class="input-group">
-            <label class="input-label" for="confirmApiKey">{{
-              t('signIn.confirmApiKeyLabel')
+            <label class="input-label" for="confirmPassword">{{
+              t('signIn.confirmPasswordLabel')
             }}</label>
             <input
-              id="confirmApiKey"
-              type="text"
+              id="confirmPassword"
+              type="password"
               class="input-field"
-              :class="{ 'input-error': confirmApiKeyError }"
-              v-model="confirmApiKey"
-              @blur="validateConfirmApiKey"
-              :placeholder="t('signIn.confirmApiKeyPlaceholder')"
+              :class="{ 'input-error': confirmPasswordError }"
+              v-model="confirmPassword"
+              @blur="validateConfirmPassword"
+              :placeholder="t('signIn.confirmPasswordPlaceholder')"
               required
             />
-            <p v-if="confirmApiKeyError" class="error-message">{{ confirmApiKeyError }}</p>
+            <p v-if="confirmPasswordError" class="error-message">{{ confirmPasswordError }}</p>
           </div>
 
           <div v-if="!isSignUp" class="checkbox-group">

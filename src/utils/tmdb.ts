@@ -1,28 +1,17 @@
 import axios from 'axios'
 import type { MovieResponse, Genre } from '@/types/movie'
-import { storage, STORAGE_KEYS } from './localStorage'
 import i18n from '@/i18n'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p'
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY
 
-/**
- * 사용자의 API 키 가져오기
- * 로그인한 사용자의 API 키를 우선 사용하고, 없으면 환경변수의 API 키 사용
- */
-const getUserApiKey = (): string => {
-  const userApiKey = storage.getItem<string>(STORAGE_KEYS.AUTH_TOKEN)
-  return userApiKey || API_KEY
-}
-
 const createUrl = (
   endpoint: string,
-  params: Record<string, string | number> = {},
-  apiKey?: string
+  params: Record<string, string | number> = {}
 ): string => {
   const url = new URL(`${BASE_URL}${endpoint}`)
-  url.searchParams.append('api_key', apiKey || getUserApiKey())
+  url.searchParams.append('api_key', API_KEY)
   const lang = i18n.global.locale.value === 'ko' ? 'ko-KR' : 'en-US'
   url.searchParams.append('language', lang)
 
@@ -31,26 +20,6 @@ const createUrl = (
   })
 
   return url.toString()
-}
-
-/**
- * TMDB API 키 유효성 검증
- * 실제 API 호출을 통해 API 키가 유효한지 확인
- */
-export const validateApiKey = async (apiKey: string): Promise<boolean> => {
-  try {
-    const url = createUrl('/configuration', {}, apiKey)
-    await axios.get(url)
-    return true
-  } catch (error: any) {
-    // 401 에러 = 유효하지 않은 API 키
-    if (error.response && error.response.status === 401) {
-      return false
-    }
-    // 기타 네트워크 에러 등
-    console.error('API 키 검증 실패:', error)
-    return false
-  }
 }
 
 const fetchData = async <T>(

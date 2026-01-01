@@ -14,7 +14,6 @@ export const STORAGE_KEYS = {
   AUTH_CURRENT_USER: 'movie_app_current_user',
   AUTH_IS_LOGGED_IN: 'movie_app_is_logged_in',
   AUTH_KEEP_LOGIN: 'movie_app_keep_login',
-  AUTH_TOKEN: 'movie_app_token',
   AUTH_SESSION_EXPIRY: 'movie_app_session_expiry',
 
   // 사용자 데이터
